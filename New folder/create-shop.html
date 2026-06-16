@@ -1,0 +1,745 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your Shop — ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    body.auth-page { background: linear-gradient(to right,#e2e2e2,#c9d6ff); min-height:100vh; color:#333; }
+
+    /* ── wizard layout ── */
+    .wizard-wrap   { display:flex; align-items:flex-start; justify-content:center; min-height:calc(100vh - 110px); padding:32px 16px 48px; }
+    .wizard-card   { background:#fff; border-radius:18px; box-shadow:0 4px 32px rgba(0,0,0,.10); width:100%; max-width:660px; overflow:hidden; }
+    .wizard-header { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; padding:28px 32px 20px; }
+    .wizard-header h1 { font-size:22px; font-weight:700; margin:0 0 4px; }
+    .wizard-header p  { font-size:13px; opacity:.85; margin:0; }
+
+    /* progress bar */
+    .wiz-progress { display:flex; align-items:center; gap:0; margin-top:20px; }
+    .wiz-step      { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
+    .wiz-step-circle {
+      width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.25);
+      border:2px solid rgba(255,255,255,.5); display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:700; color:#fff; z-index:1;
+      transition:background .3s, border-color .3s;
+    }
+    .wiz-step.done   .wiz-step-circle { background:#fff; color:#2563eb; border-color:#fff; }
+    .wiz-step.active .wiz-step-circle { background:#fff; color:#2563eb; border-color:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.4); }
+    .wiz-step-label  { font-size:10px; margin-top:5px; opacity:.75; white-space:nowrap; }
+    .wiz-step.active .wiz-step-label  { opacity:1; font-weight:600; }
+    .wiz-line { flex:1; height:2px; background:rgba(255,255,255,.25); margin-bottom:14px; transition:background .3s; }
+    .wiz-line.done { background:#fff; }
+
+    /* step panels */
+    .wizard-body  { padding:28px 32px; }
+    .wiz-panel    { display:none; }
+    .wiz-panel.active { display:block; }
+    .wiz-panel h2 { font-size:17px; font-weight:700; color:#1f2937; margin:0 0 6px; }
+    .wiz-panel p.hint { font-size:13px; color:#6b7280; margin:0 0 20px; }
+
+    /* form fields */
+    .wiz-field { margin-bottom:18px; }
+    .wiz-label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+    .wiz-input, .wiz-select, .wiz-textarea {
+      width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:10px;
+      font-size:14px; font-family:inherit; color:#1f2937; background:#fff;
+      transition:border-color .2s; outline:none;
+    }
+    .wiz-input:focus, .wiz-select:focus, .wiz-textarea:focus { border-color:#2563eb; }
+    .wiz-textarea { resize:vertical; min-height:90px; }
+    .wiz-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+    /* emoji picker */
+    .emoji-pick-wrap  { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .emoji-preview    { font-size:36px; }
+    .emoji-sugg-row   { display:flex; flex-wrap:wrap; gap:6px; }
+    .emoji-sugg-btn   { background:#f3f4f6; border:1.5px solid #e5e7eb; border-radius:8px; padding:4px 8px; font-size:20px; cursor:pointer; transition:all .15s; }
+    .emoji-sugg-btn:hover    { border-color:#2563eb; background:#eff6ff; }
+    .emoji-sugg-btn.selected { border-color:#2563eb; background:#eff6ff; box-shadow:0 0 0 2px #bfdbfe; }
+
+    /* verification questions */
+    .vq-item    { background:#f9fafb; border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+    .vq-label   { font-size:13px; font-weight:600; color:#374151; margin-bottom:8px; }
+    .vq-options { display:flex; flex-wrap:wrap; gap:8px; }
+    .vq-opt     { padding:6px 14px; border:1.5px solid #e5e7eb; border-radius:20px; font-size:13px; cursor:pointer; transition:all .15s; background:#fff; }
+    .vq-opt:hover    { border-color:#2563eb; color:#2563eb; }
+    .vq-opt.selected { border-color:#2563eb; background:#2563eb; color:#fff; }
+
+    /* photo step */
+    .photo-upload-area {
+      border:2px dashed #e5e7eb; border-radius:12px; padding:32px;
+      text-align:center; cursor:pointer; position:relative; overflow:hidden; transition:all .2s;
+    }
+    .photo-upload-area:hover { border-color:#2563eb; background:#f0f9ff; }
+    .photo-upload-area input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .photo-preview { width:100%; max-height:220px; object-fit:cover; border-radius:10px; display:none; margin-top:12px; }
+    .photo-icon { font-size:48px; margin-bottom:8px; }
+    .photo-hint { font-size:13px; color:#6b7280; }
+
+    /* nav buttons */
+    .wiz-footer { display:flex; justify-content:space-between; align-items:center; padding:20px 32px 28px; border-top:1px solid #f3f4f6; }
+    .wiz-back-btn { background:none; border:1.5px solid #e5e7eb; color:#6b7280; padding:10px 22px; border-radius:10px; font-size:14px; cursor:pointer; transition:all .2s; }
+    .wiz-back-btn:hover { border-color:#2563eb; color:#2563eb; }
+    .wiz-next-btn { background:#2563eb; color:#fff; border:none; padding:11px 26px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:background .2s; }
+    .wiz-next-btn:hover { background:#1d4ed8; }
+    .wiz-next-btn:disabled { background:#9ca3af; cursor:not-allowed; }
+    .wiz-error { color:#c0392b; font-size:13px; margin-bottom:12px; display:none; }
+    .wiz-success-icon { font-size:56px; text-align:center; margin-bottom:12px; }
+
+    @media (max-width: 640px) {
+      .wizard-body, .wiz-footer { padding-left:20px; padding-right:20px; }
+      .wiz-grid2 { grid-template-columns:1fr; }
+    }
+
+    /* ── Map location styles ── */
+    .map-section-head {
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;
+    }
+    .map-search-row {
+      display:flex; gap:8px; margin-bottom:8px;
+    }
+    .map-search-row .wiz-input { flex:1; margin:0; }
+    .map-search-btn {
+      background:#2563eb; color:#fff; border:none;
+      padding:10px 16px; border-radius:10px; font-size:13px;
+      font-weight:600; cursor:pointer; white-space:nowrap;
+      display:flex; align-items:center; gap:5px; flex-shrink:0;
+    }
+    .map-search-btn:hover { background:#1d4ed8; }
+    #shop-map {
+      height:260px; border-radius:10px;
+      border:1.5px solid #e5e7eb; overflow:hidden;
+      position:relative; z-index:0;
+    }
+    #map-status { margin-top:8px; }
+    .map-badge {
+      padding:9px 13px; border-radius:9px;
+      font-size:13px; line-height:1.45; display:flex;
+      align-items:flex-start; gap:7px;
+    }
+    .map-badge.verified   { color:#15803d; background:#f0fdf4; border:1px solid #bbf7d0; }
+    .map-badge.unverified { color:#92400e; background:#fffbeb; border:1px solid #fde68a; }
+    .map-badge.idle       { color:#4b5563; background:#f9fafb; border:1px solid #e5e7eb; }
+    .map-badge-addr { font-size:11.5px; opacity:.75; margin-top:3px; }
+    .map-divider {
+      border:none; border-top:1px solid #e5e7eb;
+      margin:22px 0 18px;
+    }
+    /* Keep Leaflet controls readable inside wizard */
+    .leaflet-top, .leaflet-bottom { z-index: 1 !important; }
+  </style>
+</head>
+<body class="auth-page">
+  <div id="header-placeholder"></div>
+
+  <div class="wizard-wrap">
+    <div class="wizard-card">
+
+      <!-- HEADER -->
+      <div class="wizard-header">
+        <h1><span id="wiz-live-icon">🏪</span> Create Your Shop</h1>
+        <p>Complete all steps to get your shop verified and listed on ShopSwift.</p>
+
+        <div class="wiz-progress">
+          <div class="wiz-step active" id="wstep-1">
+            <div class="wiz-step-circle">1</div>
+            <div class="wiz-step-label">Basics</div>
+          </div>
+          <div class="wiz-line" id="wline-1"></div>
+          <div class="wiz-step" id="wstep-2">
+            <div class="wiz-step-circle">2</div>
+            <div class="wiz-step-label">Verify</div>
+          </div>
+          <div class="wiz-line" id="wline-2"></div>
+          <div class="wiz-step" id="wstep-3">
+            <div class="wiz-step-circle">3</div>
+            <div class="wiz-step-label">Location</div>
+          </div>
+          <div class="wiz-line" id="wline-3"></div>
+          <div class="wiz-step" id="wstep-4">
+            <div class="wiz-step-circle">4</div>
+            <div class="wiz-step-label">Photo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-body">
+        <div class="wiz-error" id="wiz-error"></div>
+
+        <!-- ── STEP 1: Basic Info ── -->
+        <div class="wiz-panel active" id="wpanel-1">
+          <h2>Shop Basics</h2>
+          <p class="hint">Tell us the fundamentals about your shop.</p>
+
+          <div class="wiz-field">
+            <label class="wiz-label">Shop Name *</label>
+            <input class="wiz-input" type="text" id="s-name" placeholder="e.g. Bamileke Craft House" required>
+          </div>
+
+          <div class="wiz-grid2">
+            <div class="wiz-field">
+              <label class="wiz-label">Category *</label>
+              <select class="wiz-select" id="s-cat" onchange="updateEmojiSugg()" required>
+                <option value="">Select a category</option>
+                <option>Food &amp; Drinks</option>
+                <option>Fashion &amp; Clothing</option>
+                <option>Electronics</option>
+                <option>Crafts &amp; Art</option>
+                <option>Services</option>
+                <option>Agriculture</option>
+                <option>Beauty &amp; Health</option>
+                <option>Home &amp; Garden</option>
+              </select>
+            </div>
+            <div class="wiz-field">
+              <label class="wiz-label">City *</label>
+              <select class="wiz-select" id="s-city" required>
+                <option value="">Select city</option>
+                <option>Buea</option><option>Douala</option><option>Yaoundé</option>
+                <option>Bafoussam</option><option>Bamenda</option><option>Limbe</option>
+                <option>Ngaoundéré</option><option>Maroua</option><option>Garoua</option>
+                <option>Kribi</option><option>Kumba</option><option>Ebolowa</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="wiz-field">
+            <label class="wiz-label">Description</label>
+            <textarea class="wiz-textarea" id="s-desc" placeholder="What do you sell? What makes your shop special?"></textarea>
+          </div>
+
+          <div class="wiz-grid2">
+            <div class="wiz-field">
+              <label class="wiz-label">Contact Phone</label>
+              <input class="wiz-input" type="tel" id="s-phone" placeholder="670 000 000">
+            </div>
+            <div class="wiz-field">
+              <label class="wiz-label">WhatsApp Business</label>
+              <input class="wiz-input" type="tel" id="s-whatsapp" placeholder="670 000 000">
+            </div>
+          </div>
+
+          <!-- Shop icon (emoji) -->
+          <div class="wiz-field">
+            <label class="wiz-label">Shop Icon (emoji)</label>
+            <div class="emoji-pick-wrap">
+              <span class="emoji-preview" id="emojiPreview">🏪</span>
+              <div class="emoji-sugg-row" id="emojiSugg">
+                <button type="button" class="emoji-sugg-btn selected" onclick="pickEmoji('🏪')">🏪</button>
+                <button type="button" class="emoji-sugg-btn" onclick="pickEmoji('🛒')">🛒</button>
+                <button type="button" class="emoji-sugg-btn" onclick="pickEmoji('🛍️')">🛍️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: Verification Questions ── -->
+        <div class="wiz-panel" id="wpanel-2">
+          <h2>Verification Questions</h2>
+          <p class="hint">Help us verify your business to build trust with customers.</p>
+
+          <div class="vq-item">
+            <div class="vq-label">1. What type of business is this?</div>
+            <div class="vq-options" id="vq1">
+              <button class="vq-opt" onclick="selectVQ('vq1',this,'individual')">Individual seller</button>
+              <button class="vq-opt" onclick="selectVQ('vq1',this,'small_biz')">Small business</button>
+              <button class="vq-opt" onclick="selectVQ('vq1',this,'registered')">Registered company</button>
+            </div>
+          </div>
+
+          <div class="vq-item">
+            <div class="vq-label">2. How long have you been in this business?</div>
+            <div class="vq-options" id="vq2">
+              <button class="vq-opt" onclick="selectVQ('vq2',this,'new')">Just starting</button>
+              <button class="vq-opt" onclick="selectVQ('vq2',this,'1year')">Less than 1 year</button>
+              <button class="vq-opt" onclick="selectVQ('vq2',this,'1-3years')">1–3 years</button>
+              <button class="vq-opt" onclick="selectVQ('vq2',this,'3plus')">3+ years</button>
+            </div>
+          </div>
+
+          <div class="vq-item">
+            <div class="vq-label">3. How do you primarily sell today?</div>
+            <div class="vq-options" id="vq3">
+              <button class="vq-opt" onclick="selectVQ('vq3',this,'physical')">Physical store</button>
+              <button class="vq-opt" onclick="selectVQ('vq3',this,'social')">Social media</button>
+              <button class="vq-opt" onclick="selectVQ('vq3',this,'both')">Both</button>
+              <button class="vq-opt" onclick="selectVQ('vq3',this,'first_time')">First time selling</button>
+            </div>
+          </div>
+
+          <div class="vq-item">
+            <div class="vq-label">4. Do you agree to ShopSwift's seller terms?</div>
+            <div class="vq-options" id="vq4">
+              <button class="vq-opt" onclick="selectVQ('vq4',this,'yes')">Yes, I agree</button>
+              <button class="vq-opt" onclick="selectVQ('vq4',this,'no')">No</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: Location ── -->
+        <div class="wiz-panel" id="wpanel-3">
+          <h2>Shop Location</h2>
+          <p class="hint">Enter your address, then pin your exact location on the map. A matching pin earns your shop a verified badge.</p>
+
+          <div class="wiz-field">
+            <label class="wiz-label">Street / Quarter *</label>
+            <input class="wiz-input" type="text" id="s-street" placeholder="e.g. Bonamoussadi, Rue des Manguiers">
+          </div>
+
+          <div class="wiz-grid2">
+            <div class="wiz-field">
+              <label class="wiz-label">Neighbourhood / Area</label>
+              <input class="wiz-input" type="text" id="s-neighbourhood" placeholder="e.g. Makepe Missoke">
+            </div>
+            <div class="wiz-field">
+              <label class="wiz-label">Landmark</label>
+              <input class="wiz-input" type="text" id="s-landmark" placeholder="e.g. Near Total Station">
+            </div>
+          </div>
+
+          <div class="wiz-grid2">
+            <div class="wiz-field">
+              <label class="wiz-label">Operating Hours</label>
+              <input class="wiz-input" type="text" id="s-hours" placeholder="e.g. Mon–Sat 8am–6pm">
+            </div>
+            <div class="wiz-field">
+              <label class="wiz-label">Delivery available?</label>
+              <div class="vq-options" id="vq-delivery" style="margin-top:2px;">
+                <button class="vq-opt" onclick="selectVQ('vq-delivery',this,'yes')">Yes</button>
+                <button class="vq-opt" onclick="selectVQ('vq-delivery',this,'no')">Pick-up only</button>
+                <button class="vq-opt" onclick="selectVQ('vq-delivery',this,'local')">Local only</button>
+              </div>
+            </div>
+          </div>
+
+          <hr class="map-divider">
+
+          <!-- Map verification block -->
+          <div class="wiz-field" style="margin-bottom:4px;">
+            <div class="map-section-head">
+              <span style="font-size:18px;">📍</span>
+              Pin Your Shop on the Map
+              <span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:2px;">(required for verification)</span>
+            </div>
+            <p style="font-size:12.5px;color:#6b7280;margin:0 0 10px;">
+              Search for your address below, or click anywhere on the map to drop a pin. If the pin's city matches your selected city, your shop gets a <strong style="color:#16a34a;">✓ Verified</strong> badge — just like Google Maps verification.
+            </p>
+
+            <div class="map-search-row">
+              <input type="text" id="map-search" class="wiz-input"
+                placeholder="Search address on map…"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();searchMapAddress();}">
+              <button type="button" class="map-search-btn" onclick="searchMapAddress()">
+                <i class="ti ti-search"></i> Search
+              </button>
+            </div>
+
+            <div id="shop-map"></div>
+            <div id="map-status">
+              <div class="map-badge idle">Click the map or search above to pin your shop location.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 4: Shop Photo ── -->
+        <div class="wiz-panel" id="wpanel-4">
+          <h2>Shop Photo <span style="font-size:13px;font-weight:400;color:#6b7280;">(optional)</span></h2>
+          <p class="hint">Upload a photo of your shop or workspace to help build trust. You can skip this and add one later.</p>
+
+          <label class="photo-upload-area" for="photo-input" style="display:block;cursor:pointer;">
+            <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(this)" style="display:none">
+            <div id="photo-upload-inner">
+              <div class="photo-icon"><i class="ti ti-camera" style="font-size:48px;"></i></div>
+              <div class="photo-hint">Click to upload a photo of your shop or workspace<br><strong>JPG / PNG</strong> · max 5 MB</div>
+            </div>
+            <img id="photo-preview-img" class="photo-preview" alt="Shop photo preview">
+          </label>
+
+          <p style="margin-top:16px;font-size:13px;color:#6b7280;">
+            <i class="ti ti-bulb"></i> Good photos: storefront, workspace, market stall, or home office. The photo is used for verification and will not be shown publicly.
+          </p>
+        </div>
+
+      </div><!-- .wizard-body -->
+
+      <div class="wiz-footer">
+        <button class="wiz-back-btn" id="wiz-back" onclick="wizStep(-1)" style="visibility:hidden;"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="wiz-next-btn" id="wiz-next" onclick="wizStep(1)">Continue <i class="ti ti-arrow-right"></i></button>
+      </div>
+
+    </div><!-- .wizard-card -->
+  </div><!-- .wizard-wrap -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    /* ── state ── */
+    let currentStep = 1;
+    const TOTAL_STEPS = 4;
+    let selectedEmoji = '🏪';
+    let shopPhotoBase64 = null;
+    const vqAnswers = {};
+
+    /* ── map state ── */
+    let _map = null, _marker = null, _mapReady = false;
+    let mapLat = null, mapLng = null;
+    let mapCityPin = null, mapFullAddress = null;
+    let mapVerified = false;
+
+    /* ── emoji map ── */
+    const emojiMap = {
+      "Food & Drinks":      ["🍲","🍗","🍕","🥘","🌮","🍔","🥗","☕","🍜","🥩"],
+      "Fashion & Clothing": ["👗","👔","👠","🧥","🧣","👒","💍","🕶️","👜","✨"],
+      "Electronics":        ["📱","💻","🖥️","📺","🎮","🔌","📷","⌚","🎧","🔋"],
+      "Crafts & Art":       ["🎨","🪆","🏺","🪡","🧶","✂️","🖼️","🎭","🪵","💎"],
+      "Services":           ["🔧","🪛","🏠","🚗","💇","🧹","📦","📋","⚙️","🔨"],
+      "Agriculture":        ["🌿","🌽","🍌","☕","🐓","🐄","🍯","🫙","🌱","🥬"],
+      "Beauty & Health":    ["💄","💅","🌸","🧴","🪞","💊","🧖","🌹","✨","🫧"],
+      "Home & Garden":      ["🪴","🛋️","🖼️","🕯️","🪑","🌻","🧺","🚿","🪟","🏡"]
+    };
+
+    function updateEmojiSugg() {
+      const cat  = document.getElementById('s-cat').value;
+      const sugg = document.getElementById('emojiSugg');
+      const list = emojiMap[cat] || ['🏪','🛒','🛍️','⭐','✨'];
+      sugg.innerHTML = list.map(e =>
+        `<button type="button" class="emoji-sugg-btn" onclick="pickEmoji('${e}')">${e}</button>`
+      ).join('');
+      pickEmoji(list[0]);
+    }
+
+    function pickEmoji(emoji) {
+      selectedEmoji = emoji;
+      document.getElementById('emojiPreview').textContent = emoji;
+      document.getElementById('wiz-live-icon').textContent = emoji;
+      document.querySelectorAll('.emoji-sugg-btn').forEach(b =>
+        b.classList.toggle('selected', b.textContent.trim() === emoji));
+    }
+
+    function selectVQ(groupId, btn, val) {
+      document.querySelectorAll(`#${groupId} .vq-opt`).forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      vqAnswers[groupId] = val;
+    }
+
+    /* ── shop photo upload ── */
+    function handlePhotoUpload(input) {
+      if (!input.files?.[0]) return;
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) { alert('Photo too large. Choose a file under 5 MB.'); return; }
+      compressImage(file, 1200, 800, 0.8).then(b64 => {
+        shopPhotoBase64 = b64;
+        const preview = document.getElementById('photo-preview-img');
+        preview.src = b64;
+        preview.style.display = 'block';
+        document.getElementById('photo-upload-inner').querySelector('.photo-hint').textContent = 'Photo uploaded ✓ Click to change';
+      });
+    }
+
+    /* ── canvas compress ── */
+    function compressImage(file, maxW, maxH, quality) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+            if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* ── map helpers ── */
+    function _norm(s) {
+      return (s || '').toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .trim();
+    }
+
+    function showMapBadge(msg, type, addr) {
+      const addrHtml = addr
+        ? `<div class="map-badge-addr">📍 ${addr}</div>` : '';
+      document.getElementById('map-status').innerHTML =
+        `<div class="map-badge ${type}">${msg}${addrHtml}</div>`;
+    }
+
+    function checkVerification() {
+      const selectedCity = document.getElementById('s-city').value;
+      if (!mapCityPin) {
+        showMapBadge('📍 Location pinned. Select a city in Step 1 to check verification.', 'idle', mapFullAddress);
+        return;
+      }
+      if (!selectedCity) {
+        showMapBadge(`📍 Pinned: ${mapFullAddress || mapCityPin}. Go back to Step 1 to select your city.`, 'idle');
+        return;
+      }
+      const nSel = _norm(selectedCity);
+      const nPin = _norm(mapCityPin);
+      const nFull = _norm(mapFullAddress || '');
+      mapVerified = nPin.includes(nSel) || nSel.includes(nPin) || nFull.includes(nSel);
+      if (mapVerified) {
+        showMapBadge(
+          `✅ Verified — map location matches <strong>${selectedCity}</strong>. Your shop will receive a verified badge.`,
+          'verified', mapFullAddress
+        );
+      } else {
+        showMapBadge(
+          `⚠️ Map shows "<strong>${mapCityPin}</strong>" — doesn't match <strong>${selectedCity}</strong>. Your shop will be created but without a verified badge.`,
+          'unverified', mapFullAddress
+        );
+      }
+    }
+
+    function processGeoResult(lat, lng, addr) {
+      mapLat = lat; mapLng = lng;
+      mapCityPin = addr.city || addr.town || addr.municipality || addr.village || addr.county || '';
+      mapFullAddress = [
+        addr.road || addr.pedestrian || addr.footway,
+        addr.suburb || addr.neighbourhood || addr.quarter,
+        addr.city || addr.town || addr.village,
+        addr.country
+      ].filter(Boolean).join(', ');
+      checkVerification();
+    }
+
+    async function reverseGeocode(lat, lng) {
+      showMapBadge('Locating…', 'idle', null);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await res.json();
+        processGeoResult(lat, lng, data.address || {});
+      } catch (_) {
+        mapLat = lat; mapLng = lng;
+        showMapBadge('📍 Location pinned. Could not load address details — check connection.', 'idle', null);
+      }
+    }
+
+    async function searchMapAddress() {
+      const q = document.getElementById('map-search').value.trim();
+      if (!q) return;
+      showMapBadge('Searching…', 'idle', null);
+      try {
+        const city = document.getElementById('s-city').value;
+        const query = q + (city ? `, ${city}` : '') + ', Cameroon';
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const results = await res.json();
+        if (!results.length) {
+          showMapBadge('No results found. Try a more specific address (e.g. include street name or area).', 'idle', null);
+          return;
+        }
+        const r = results[0];
+        const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+        _map.setView([lat, lng], 16);
+        _marker.setLatLng([lat, lng]);
+        processGeoResult(lat, lng, r.address || {});
+      } catch (_) {
+        showMapBadge('Search failed. Please check your internet connection.', 'idle', null);
+      }
+    }
+
+    async function _centerMapOnCity(city) {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city + ', Cameroon')}&format=json&limit=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const d = await res.json();
+        if (d[0]) _map.setView([parseFloat(d[0].lat), parseFloat(d[0].lon)], 13);
+      } catch (_) {}
+    }
+
+    function initMap() {
+      if (_mapReady) { setTimeout(() => _map.invalidateSize(), 80); return; }
+      _mapReady = true;
+
+      _map = L.map('shop-map', { zoomControl: true }).setView([4.05, 9.70], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(_map);
+
+      _marker = L.marker([4.05, 9.70], { draggable: true, title: 'Drag to your shop' })
+        .addTo(_map);
+
+      _marker.on('dragend', () => {
+        const ll = _marker.getLatLng();
+        reverseGeocode(ll.lat, ll.lng);
+      });
+
+      _map.on('click', e => {
+        _marker.setLatLng(e.latlng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
+      });
+
+      // Pre-center on selected city if available
+      const city = document.getElementById('s-city').value;
+      if (city) _centerMapOnCity(city);
+    }
+
+    /* ── step navigation ── */
+    function wizStep(dir) {
+      const errEl = document.getElementById('wiz-error');
+      errEl.style.display = 'none';
+
+      if (dir === 1 && !validateStep(currentStep)) return;
+
+      if (dir === 1 && currentStep === TOTAL_STEPS) {
+        submitShop(); return;
+      }
+
+      document.getElementById(`wpanel-${currentStep}`).classList.remove('active');
+      document.getElementById(`wstep-${currentStep}`).classList.remove('active');
+      if (dir === 1) {
+        document.getElementById(`wstep-${currentStep}`).classList.add('done');
+        document.getElementById(`wstep-${currentStep}`).querySelector('.wiz-step-circle').textContent = '✓';
+        if (currentStep < TOTAL_STEPS) document.getElementById(`wline-${currentStep}`).classList.add('done');
+      }
+
+      currentStep = Math.max(1, Math.min(TOTAL_STEPS, currentStep + dir));
+
+      document.getElementById(`wpanel-${currentStep}`).classList.add('active');
+      document.getElementById(`wstep-${currentStep}`).classList.add('active');
+      if (currentStep === 3) setTimeout(initMap, 60);
+      if (dir === -1) {
+        document.getElementById(`wstep-${currentStep}`).classList.remove('done');
+        document.getElementById(`wstep-${currentStep}`).querySelector('.wiz-step-circle').textContent = currentStep;
+        const line = document.getElementById(`wline-${currentStep}`);
+        if (line) line.classList.remove('done');
+      }
+
+      document.getElementById('wiz-back').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+      document.getElementById('wiz-next').innerHTML =
+        currentStep === TOTAL_STEPS ? 'Create Shop <i class="ti ti-arrow-right"></i>' : 'Continue <i class="ti ti-arrow-right"></i>';
+    }
+
+    function validateStep(step) {
+      const err = document.getElementById('wiz-error');
+      if (step === 1) {
+        if (!document.getElementById('s-name').value.trim()) {
+          showErr('Please enter your shop name.'); return false;
+        }
+        if (!document.getElementById('s-cat').value) {
+          showErr('Please select a category.'); return false;
+        }
+        if (!document.getElementById('s-city').value) {
+          showErr('Please select your city.'); return false;
+        }
+      }
+      if (step === 2) {
+        if (!vqAnswers['vq1'] || !vqAnswers['vq2'] || !vqAnswers['vq3'] || !vqAnswers['vq4']) {
+          showErr('Please answer all verification questions.'); return false;
+        }
+        if (vqAnswers['vq4'] !== 'yes') {
+          showErr('You must agree to ShopSwift\'s seller terms to proceed.'); return false;
+        }
+      }
+      if (step === 3) {
+        if (!document.getElementById('s-street').value.trim()) {
+          showErr('Please enter your street / quarter address.'); return false;
+        }
+        if (mapLat === null) {
+          showErr('Please pin your shop location on the map before continuing.'); return false;
+        }
+      }
+      /* step 4 photo is optional — user can skip */
+      return true;
+    }
+
+    function showErr(msg) {
+      const el = document.getElementById('wiz-error');
+      el.textContent = msg; el.style.display = 'block';
+      el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    /* ── final submission ── */
+    async function submitShop() {
+      const btn = document.getElementById('wiz-next');
+      btn.innerHTML = 'Creating shop…'; btn.disabled = true;
+
+      const address = [
+        document.getElementById('s-street').value.trim(),
+        document.getElementById('s-neighbourhood').value.trim(),
+        document.getElementById('s-city').value
+      ].filter(Boolean).join(', ');
+
+      /* Upload the verification photo to the private bucket (best-effort —
+         a failed upload should not block shop creation). */
+      let verifPhotoPath = null;
+      if (shopPhotoBase64) {
+        try {
+          const blob = await (await fetch(shopPhotoBase64)).blob();
+          const file = new File([blob], 'verif.jpg', { type: blob.type || 'image/jpeg' });
+          verifPhotoPath = await ShopsAPI.uploadVerifPhoto(file);
+        } catch (e) { console.warn('Verification photo upload failed:', e.message); }
+      }
+
+      const payload = {
+        name:        document.getElementById('s-name').value.trim(),
+        cat:         document.getElementById('s-cat').value,
+        loc:         document.getElementById('s-city').value,
+        description: document.getElementById('s-desc').value.trim(),
+        emoji:       selectedEmoji,
+        phone:       document.getElementById('s-phone').value.trim(),
+        whatsapp:    document.getElementById('s-whatsapp').value.trim(),
+        address,
+        landmark:    document.getElementById('s-landmark').value.trim(),
+        hours:       document.getElementById('s-hours').value.trim(),
+        delivery:    vqAnswers['vq-delivery'] || 'unknown',
+        lat:         mapLat,
+        lng:         mapLng,
+        map_address: mapFullAddress || null,
+        verified:    mapVerified,
+        verif_answers:   { ...vqAnswers },
+        verif_photo_url: verifPhotoPath
+      };
+
+      try {
+        const shop = await ShopsAPI.create(payload);
+        localStorage.setItem('cammarket_active_shop', shop.id);
+        btn.innerHTML = mapVerified
+          ? '✅ Shop verified &amp; created! Redirecting…'
+          : '🏪 Shop created! Redirecting…';
+        setTimeout(() => { window.location.href = 'seller-dashboard.html'; }, 1200);
+      } catch (err) {
+        showErr(err.message || 'Could not create shop. Please try again.');
+        btn.innerHTML = 'Create Shop <i class="ti ti-arrow-right"></i>'; btn.disabled = false;
+      }
+    }
+
+    /* ── init ── */
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!Auth.isLoggedIn()) { window.location.href = 'register.html'; return; }
+      const { data: sd } = await sb.auth.getSession();
+      if (!sd?.session) { window.location.href = 'project.html?msg=session_expired'; return; }
+      const user = Auth.getUser();
+      if (user?.phone) document.getElementById('s-phone').value = user.phone;
+      if (user?.city)  document.getElementById('s-city').value  = user.city;
+    });
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => { const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html)); })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order &#8212; ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body class="tracking-page">
+
+  <div id="header-placeholder"></div>
+
+  <div class="tracking-layout" id="tracking-layout">
+
+    <!-- Header Card -->
+    <div class="tracking-header-card">
+      <div>
+        <div class="tracking-order-id">Order reference: <strong id="order-ref-display">&#8212;</strong></div>
+        <div style="font-size:15px;font-weight:700;color:#1c1c1c;margin-top:4px;" id="order-date">Placed on &#8212;</div>
+      </div>
+      <div class="tracking-status-pill" id="status-pill">Pending</div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="tracking-timeline">
+      <h3>Delivery Progress</h3>
+      <div class="timeline">
+
+        <div class="timeline-step" id="step-pending">
+          <div class="timeline-dot">&#10003;</div>
+          <div class="timeline-step-title">Order Placed</div>
+          <div class="timeline-step-date" id="date-ordered"></div>
+          <div class="timeline-step-desc">Your order was received and is being reviewed by the seller.</div>
+        </div>
+
+        <div class="timeline-step" id="step-confirmed">
+          <div class="timeline-dot">&#10003;</div>
+          <div class="timeline-step-title">Order Confirmed</div>
+          <div class="timeline-step-date" id="date-confirmed"></div>
+          <div class="timeline-step-desc">The seller has confirmed your order and is preparing it.</div>
+        </div>
+
+        <div class="timeline-step" id="step-shipped">
+          <div class="timeline-dot"></div>
+          <div class="timeline-step-title">Shipped / On the Way</div>
+          <div class="timeline-step-date" id="date-shipped"></div>
+          <div class="timeline-step-desc">Your package is on its way. The delivery agent will contact you soon.</div>
+        </div>
+
+        <div class="timeline-step" id="step-delivered">
+          <div class="timeline-dot"></div>
+          <div class="timeline-step-title">Delivered</div>
+          <div class="timeline-step-date" id="date-delivered">Awaiting delivery</div>
+          <div class="timeline-step-desc">Your package will be handed to you at your delivery address.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="tracking-detail-card">
+      <h3>Items Ordered</h3>
+      <div id="tracking-items"></div>
+      <div class="tracking-total-row">
+        <span>Total Paid</span>
+        <span id="tracking-total">FCFA &#8212;</span>
+      </div>
+    </div>
+
+    <!-- Seller Info -->
+    <div class="tracking-seller-card">
+      <div class="tracking-seller-avatar" id="seller-emoji">&#128; </div>
+      <div class="tracking-seller-info">
+        <strong id="seller-name">Seller</strong>
+        <span id="seller-loc">Cameroon</span>
+      </div>
+      <button class="btn-contact-seller" onclick="contactSeller()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Contact Seller
+      </button>
+    </div>
+
+    <!-- Confirm Receipt — shown when seller marked delivered but buyer hasn't confirmed yet -->
+    <div id="confirm-delivery-wrap" style="display:none;">
+      <div style="background:#fff8e1;border:1.5px solid #fbbf24;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:1.5rem;">&#128230;</span>
+          <strong style="font-size:15px;color:#92400e;">Your package has been delivered!</strong>
+        </div>
+        <p style="font-size:14px;color:#78350f;margin:0 0 14px;line-height:1.6;">
+          The seller has marked your order as delivered. Please confirm that you have actually received your package to close this order.
+        </p>
+        <button id="confirm-delivery-btn" onclick="confirmDelivery()"
+          style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">
+          &#10003;&nbsp; I've Received My Order
+        </button>
+      </div>
+    </div>
+
+    <!-- Back links -->
+    <div style="text-align:center;margin-top:2rem;">
+      <a href="home.html" style="color:#7494ec;font-size:14px;text-decoration:none;font-weight:500;">&#8592; Back to Home</a>
+      &nbsp;&middot;&nbsp;
+      <a href="search and browse.html" style="color:#7494ec;font-size:14px;text-decoration:none;font-weight:500;">Browse More Shops</a>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    (function() {
+      const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+      if (!user) { window.location.href = 'project.html'; }
+    })();
+
+    const STATUS_ORDER = ['pending', 'confirmed', 'shipped', 'delivered'];
+    const STATUS_STEPS = {
+      pending:   'step-pending',
+      confirmed: 'step-confirmed',
+      shipped:   'step-shipped',
+      delivered: 'step-delivered',
+      cancelled: null
+    };
+    const STATUS_LABELS = {
+      pending:   'Pending',
+      confirmed: 'Confirmed',
+      shipped:   'Shipped',
+      delivered: 'Delivered',
+      cancelled: 'Cancelled'
+    };
+    const STATUS_PILL_CLASS = {
+      pending:   'pending',
+      confirmed: 'confirmed',
+      shipped:   'shipped',
+      delivered: 'delivered',
+      cancelled: 'cancelled'
+    };
+
+    let realtimeChannel = null;
+    let currentOrder    = null;
+    let currentShopId   = null;
+
+    function showNoOrder() {
+      document.getElementById('tracking-layout').innerHTML = `
+        <div style="text-align:center;padding:80px 24px;color:#6b7280;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 16px;display:block;color:#d1d5db;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/>
+          </svg>
+          <h2 style="font-size:18px;font-weight:700;color:#1c1c1c;margin:0 0 8px;">No active order</h2>
+          <p style="font-size:14px;margin:0 0 24px;">You don't have any order to track right now.<br>Place an order first to see its status here.</p>
+          <a href="search and browse.html" style="display:inline-block;padding:12px 28px;background:#2563eb;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">Browse Shops</a>
+        </div>`;
+    }
+
+    function applyStatus(status) {
+      const pill = document.getElementById('status-pill');
+      pill.textContent = STATUS_LABELS[status] || status;
+      pill.className = 'tracking-status-pill ' + (STATUS_PILL_CLASS[status] || 'pending');
+
+      if (status === 'cancelled') {
+        document.querySelectorAll('.timeline-step').forEach(s => s.classList.remove('done', 'active'));
+        document.getElementById('step-pending').classList.add('done');
+        return;
+      }
+
+      const idx = STATUS_ORDER.indexOf(status);
+      STATUS_ORDER.forEach((s, i) => {
+        const el = document.getElementById(STATUS_STEPS[s]);
+        if (!el) return;
+        el.classList.remove('done', 'active');
+        if (i < idx) el.classList.add('done');
+        else if (i === idx) el.classList.add('active');
+      });
+    }
+
+    /* Wraps applyStatus and also handles buyer_confirmed state */
+    function applyOrderState(order) {
+      const status    = order.status || 'pending';
+      const confirmed = order.buyer_confirmed || false;
+
+      applyStatus(status);
+
+      if (status === 'delivered') {
+        if (!confirmed) {
+          /* Seller delivered, buyer hasn't confirmed — override pill */
+          const pill = document.getElementById('status-pill');
+          pill.textContent = 'Awaiting Your Confirmation';
+          pill.className   = 'tracking-status-pill shipped';
+        } else {
+          /* Both parties confirmed — tick the Delivered step too */
+          const deliveredEl = document.getElementById('step-delivered');
+          if (deliveredEl) { deliveredEl.classList.remove('active'); deliveredEl.classList.add('done'); }
+        }
+      }
+
+      /* Show / hide the confirm-receipt card */
+      const wrap = document.getElementById('confirm-delivery-wrap');
+      if (wrap) wrap.style.display = (status === 'delivered' && !confirmed) ? 'block' : 'none';
+    }
+
+    function renderItems(order) {
+      const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items || [];
+      const deliveryFee = 2000;
+
+      if (!items.length) {
+        document.getElementById('tracking-items').innerHTML = '<p style="color:#9ca3af;font-size:13px;">No item details available.</p>';
+        document.getElementById('tracking-total').textContent = `FCFA ${Number(order.total || 0).toLocaleString()}`;
+        return;
+      }
+
+      document.getElementById('tracking-items').innerHTML = items.map(item => `
+        <div class="tracking-item-row">
+          <div class="tracking-item-emoji"><i class="ti ti-package" style="font-size:1.2rem;color:#9ca3af;"></i></div>
+          <div class="tracking-item-name">${item.name}</div>
+          <div class="tracking-item-qty">x ${item.qty}</div>
+          <div class="tracking-item-price">FCFA ${(item.price * item.qty).toLocaleString()}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('tracking-total').textContent = `FCFA ${Number(order.total).toLocaleString()}`;
+
+      /* Seller info from first item */
+      const firstItem = items[0];
+      currentShopId = firstItem?.shop_id || null;
+      document.getElementById('seller-emoji').innerHTML = '<i class="ti ti-building-store" style="font-size:1.5rem;"></i>';
+      document.getElementById('seller-name').textContent  = firstItem?.shop_name || 'ShopSwift Seller';
+      document.getElementById('seller-loc').textContent   = 'Cameroon';
+    }
+
+    function renderOrderMeta(order) {
+      const ref = localStorage.getItem('cammarket_last_order') || order.id;
+      document.getElementById('order-ref-display').textContent = ref;
+
+      const placed = new Date(order.created_at);
+      document.getElementById('order-date').textContent = 'Placed on ' +
+        placed.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('date-ordered').textContent =
+        placed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' · ' +
+        placed.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function init() {
+      const orderId = localStorage.getItem('cammarket_last_order_id');
+      if (!orderId) { showNoOrder(); return; }
+
+      try {
+        currentOrder = await OrdersAPI.get(orderId);
+      } catch (err) {
+        showNoOrder();
+        return;
+      }
+
+      renderOrderMeta(currentOrder);
+      applyOrderState(currentOrder);
+      renderItems(currentOrder);
+
+      /* Realtime: catches both status and buyer_confirmed changes */
+      realtimeChannel = OrdersAPI.subscribeToOrder(orderId, updated => {
+        currentOrder = { ...currentOrder, ...updated };
+        applyOrderState(currentOrder);
+        if (updated.total) {
+          document.getElementById('tracking-total').textContent =
+            `FCFA ${Number(updated.total).toLocaleString()}`;
+        }
+      });
+    }
+
+    async function confirmDelivery() {
+      const btn = document.getElementById('confirm-delivery-btn');
+      btn.disabled    = true;
+      btn.textContent = 'Confirming…';
+      try {
+        await OrdersAPI.confirmDelivery(currentOrder.id);
+        currentOrder.buyer_confirmed = true;
+        applyOrderState(currentOrder);
+      } catch(e) {
+        alert(e.message || 'Could not confirm delivery. Please try again.');
+        btn.disabled    = false;
+        btn.innerHTML   = '&#10003;&nbsp; I\'ve Received My Order';
+      }
+    }
+
+    function contactSeller() {
+      if (!currentShopId) {
+        alert('Shop information is not available for this order.');
+        return;
+      }
+      window.location.href = `shop.html?id=${currentShopId}&openChat=1`;
+    }
+
+    /* Clean up Realtime on page unload */
+    window.addEventListener('beforeunload', () => {
+      if (realtimeChannel) realtimeChannel.unsubscribe();
+    });
+
+    init();
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => { const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html)); })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>

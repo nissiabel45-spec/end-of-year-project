@@ -1,0 +1,716 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop Creator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #ededea;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #888780;
+      --border-light: rgba(0,0,0,0.10);
+      --border-mid: rgba(0,0,0,0.18);
+      --border-strong: rgba(0,0,0,0.28);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1c1c1a;
+        --bg-secondary: #252523;
+        --bg-tertiary: #2e2e2b;
+        --text-primary: #f0ede8;
+        --text-secondary: #a8a69f;
+        --text-tertiary: #6e6c66;
+        --border-light: rgba(255,255,255,0.08);
+        --border-mid: rgba(255,255,255,0.14);
+        --border-strong: rgba(255,255,255,0.22);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .app {
+      display: flex;
+      width: 100%;
+      max-width: 900px;
+      min-height: 580px;
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--bg-primary);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--bg-secondary);
+      border-right: 0.5px solid var(--border-light);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 8px 8px 6px;
+    }
+
+    .shop-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-secondary);
+      border: 0.5px solid transparent;
+      transition: background 0.15s;
+    }
+
+    .shop-item:hover { background: var(--bg-primary); color: var(--text-primary); }
+    .shop-item.active { background: var(--bg-primary); color: var(--text-primary); border-color: var(--border-mid); }
+
+    .shop-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .shop-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .add-btn {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px;
+      border: 0.5px dashed var(--border-mid);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .add-btn:hover { background: var(--bg-primary); color: var(--text-primary); border-style: solid; }
+
+    /* ── Main panel ── */
+    .main {
+      flex: 1;
+      padding: 28px 32px;
+      overflow-y: auto;
+    }
+
+    .view-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .view-title { font-size: 20px; font-weight: 500; }
+    .view-sub { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+
+    .tag {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .tag-active { background: #EAF3DE; color: #3B6D11; }
+    .tag-draft  { background: #FAEEDA; color: #854F0B; }
+
+    /* ── Stats ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+
+    .stat-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .stat-value { font-size: 22px; font-weight: 500; }
+
+    /* ── Form elements ── */
+    .section-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 10px;
+    }
+
+    .field-row { margin-bottom: 14px; }
+    .field-row label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px 11px;
+      font-size: 14px;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--border-strong); }
+    textarea { height: 76px; resize: vertical; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── Color picker ── */
+    .color-picker-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .color-dot {
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: transform 0.1s;
+    }
+    .color-dot:hover { transform: scale(1.15); }
+    .color-dot.selected { border-color: var(--text-primary); }
+
+    /* ── Products grid ── */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .product-card {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 12px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .product-card:hover { border-color: var(--border-strong); }
+    .product-card .p-icon { font-size: 22px; margin-bottom: 6px; }
+    .product-card .p-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product-card .p-price { color: var(--text-secondary); margin-top: 2px; }
+    .product-card .p-stock { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+    .product-card.add-card {
+      border-style: dashed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      min-height: 90px;
+    }
+
+    .product-card.add-card:hover { color: var(--text-primary); }
+
+    /* ── Action bar ── */
+    .divider { height: 0.5px; background: var(--border-light); margin: 22px 0; }
+
+    .action-bar { display: flex; gap: 8px; padding-top: 20px; border-top: 0.5px solid var(--border-light); margin-top: 24px; }
+
+    .btn-primary {
+      padding: 9px 20px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      font-family: inherit;
+    }
+    .btn-primary:hover { opacity: 0.82; }
+
+    .btn-sec {
+      padding: 9px 18px;
+      background: transparent;
+      color: var(--text-primary);
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+    .btn-sec:hover { background: var(--bg-secondary); }
+
+    .btn-danger {
+      padding: 9px 16px;
+      background: transparent;
+      color: #A32D2D;
+      border: 0.5px solid #F09595;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-danger:hover { background: #FCEBEB; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 60px 0; color: var(--text-tertiary); }
+    .empty-state i { font-size: 40px; display: block; margin-bottom: 12px; }
+    .empty-state .es-title { font-size: 15px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+    .empty-state .es-sub { font-size: 13px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── Modals ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      border: 0.5px solid var(--border-light);
+      padding: 26px;
+      width: 380px;
+      max-width: 92vw;
+    }
+
+    .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 18px; }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 22px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      body { padding: 0; }
+      .app { flex-direction: column; border-radius: 0; min-height: 100vh; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 0.5px solid var(--border-light); flex-direction: row; flex-wrap: wrap; align-items: center; padding: 10px; }
+      .sidebar-title { display: none; }
+      .shop-item { flex: 0 0 auto; }
+      .add-btn { margin-top: 0; margin-left: auto; }
+      .main { padding: 20px 16px; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">My Shops</div>
+    <div id="shop-list"></div>
+    <button class="add-btn" onclick="openCreateModal()">
+      <i class="ti ti-plus" aria-hidden="true"></i> New shop
+    </button>
+  </div>
+
+  <!-- Main panel -->
+  <div class="main" id="main-panel">
+    <div class="empty-state">
+      <i class="ti ti-store-off" aria-hidden="true"></i>
+      <div class="es-title">No shop selected</div>
+      <div class="es-sub">Create a new shop or select one from the sidebar.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Create shop modal -->
+<div class="modal-overlay" id="create-modal">
+  <div class="modal">
+    <div class="modal-title">Create new shop</div>
+    <div class="field-row">
+      <label>Shop name</label>
+      <input type="text" id="new-shop-name" placeholder="e.g. Sunrise Bakery" />
+    </div>
+    <div class="field-row">
+      <label>Category</label>
+      <select id="new-shop-cat">
+        <option>Fashion</option>
+        <option>Food &amp; Beverage</option>
+        <option>Electronics</option>
+        <option>Books &amp; Media</option>
+        <option>Health &amp; Beauty</option>
+        <option>Home &amp; Garden</option>
+        <option>Sports</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <label>Brand color</label>
+      <div class="color-picker-row" id="create-color-picker"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('create-modal')">Cancel</button>
+      <button class="btn-primary" onclick="createShop()">Create shop</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add / edit product modal -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal">
+    <div class="modal-title" id="product-modal-title">Add product</div>
+    <div class="field-row">
+      <label>Product name</label>
+      <input type="text" id="prod-name" placeholder="e.g. Classic Tote Bag" />
+    </div>
+    <div class="two-col">
+      <div class="field-row">
+        <label>Price ($)</label>
+        <input type="number" id="prod-price" placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="field-row">
+        <label>Stock</label>
+        <input type="number" id="prod-stock" placeholder="0" min="0" />
+      </div>
+    </div>
+    <div class="field-row">
+      <label>Icon (icon name)</label>
+      <input type="text" id="prod-icon" placeholder="shopping-bag" style="width: 140px;" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('product-modal')">Cancel</button>
+      <button class="btn-danger" id="delete-prod-btn" onclick="deleteProduct()" style="display:none;">Delete</button>
+      <button class="btn-primary" onclick="saveProduct()">Save product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const COLORS = ['#E24B4A','#378ADD','#1D9E75','#BA7517','#D4537E','#639922','#7F77DD','#D85A30'];
+  const CATEGORIES = ['Fashion','Food & Beverage','Electronics','Books & Media','Health & Beauty','Home & Garden','Sports','Other'];
+
+  let shops = [];
+  let activeShopId = null;
+  let editProdIdx = null;
+  let createColorSel = COLORS[0];
+
+  function uid() { return Math.random().toString(36).slice(2, 9); }
+
+  /* ── Sidebar ── */
+  function renderSidebar() {
+    const el = document.getElementById('shop-list');
+    el.innerHTML = shops.map(s => `
+      <div class="shop-item${activeShopId === s.id ? ' active' : ''}" onclick="selectShop('${s.id}')">
+        <span class="dot" style="background:${s.color}"></span>
+        <span class="name">${esc(s.name)}</span>
+      </div>`).join('');
+  }
+
+  function selectShop(id) {
+    activeShopId = id;
+    renderSidebar();
+    renderMain();
+  }
+
+  /* ── Main panel ── */
+  function renderMain() {
+    const panel = document.getElementById('main-panel');
+    const shop = shops.find(s => s.id === activeShopId);
+
+    if (!shop) {
+      panel.innerHTML = `
+        <div class="empty-state">
+          <i class="ti ti-store-off" aria-hidden="true"></i>
+          <div class="es-title">No shop selected</div>
+          <div class="es-sub">Create a new shop or select one from the sidebar.</div>
+        </div>`;
+      return;
+    }
+
+    const totalRev   = shop.products.reduce((a, p) => a + p.price * p.stock, 0);
+    const totalProd  = shop.products.length;
+    const totalStock = shop.products.reduce((a, p) => a + Number(p.stock), 0);
+
+    panel.innerHTML = `
+      <div class="view-header">
+        <div>
+          <div class="view-title">${esc(shop.name)}</div>
+          <div class="view-sub">${esc(shop.category)}</div>
+        </div>
+        <span class="tag ${shop.active ? 'tag-active' : 'tag-draft'}">${shop.active ? 'Active' : 'Draft'}</span>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Products</div><div class="stat-value">${totalProd}</div></div>
+        <div class="stat-card"><div class="stat-label">Total stock</div><div class="stat-value">${totalStock}</div></div>
+        <div class="stat-card"><div class="stat-label">Inventory value</div><div class="stat-value">$${totalRev.toFixed(0)}</div></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">Shop details</div>
+      <div class="two-col">
+        <div class="field-row">
+          <label>Shop name</label>
+          <input type="text" value="${esc(shop.name)}" oninput="updateField('name',this.value)" />
+        </div>
+        <div class="field-row">
+          <label>Category</label>
+          <select onchange="updateField('category',this.value)">
+            ${CATEGORIES.map(c => `<option${c === shop.category ? ' selected' : ''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Description</label>
+        <textarea oninput="updateField('description',this.value)" placeholder="Tell customers about your shop…">${esc(shop.description || '')}</textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-row">
+          <label>Owner name</label>
+          <input type="text" value="${esc(shop.owner || '')}" oninput="updateField('owner',this.value)" placeholder="Your name" />
+        </div>
+        <div class="field-row">
+          <label>Contact email</label>
+          <input type="email" value="${esc(shop.email || '')}" oninput="updateField('email',this.value)" placeholder="shop@email.com" />
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Brand color</label>
+        <div class="color-picker-row" id="shop-color-picker">
+          ${COLORS.map(c => `<div class="color-dot${shop.color === c ? ' selected' : ''}" style="background:${c}" onclick="updateColor('${c}')"></div>`).join('')}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">Products</div>
+      <div class="products-grid">
+        ${shop.products.map((p, i) => `
+          <div class="product-card" onclick="editProduct(${i})">
+            <div class="p-icon"><i class="ti ti-${p.icon || 'package'}"></i></div>
+            <div class="p-name">${esc(p.name)}</div>
+            <div class="p-price">$${Number(p.price).toFixed(2)}</div>
+            <div class="p-stock">Stock: ${p.stock}</div>
+          </div>`).join('')}
+        <div class="product-card add-card" onclick="openProductModal()">
+          <i class="ti ti-plus" aria-hidden="true" style="font-size:22px;margin-bottom:5px;"></i>
+          <span style="font-size:12px;">Add product</span>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn-primary" onclick="saveShop()">Save changes</button>
+        <button class="btn-sec" onclick="toggleActive()">${shop.active ? 'Set to draft' : 'Publish shop'}</button>
+        <button class="btn-danger" onclick="deleteShop()" style="margin-left:auto;">Delete shop</button>
+      </div>`;
+  }
+
+  /* ── Field updates ── */
+  function updateField(key, val) {
+    const s = shops.find(x => x.id === activeShopId);
+    if (s) s[key] = val;
+  }
+
+  function updateColor(c) {
+    const s = shops.find(x => x.id === activeShopId);
+    if (!s) return;
+    s.color = c;
+    document.querySelectorAll('#shop-color-picker .color-dot').forEach(d => {
+      d.classList.toggle('selected', d.style.background === c);
+    });
+    renderSidebar();
+  }
+
+  function toggleActive() {
+    const s = shops.find(x => x.id === activeShopId);
+    if (s) { s.active = !s.active; renderMain(); }
+  }
+
+  function saveShop() {
+    renderSidebar();
+    showToast('Shop saved!');
+  }
+
+  function deleteShop() {
+    if (!confirm('Delete this shop? This cannot be undone.')) return;
+    shops = shops.filter(s => s.id !== activeShopId);
+    activeShopId = shops[0]?.id || null;
+    renderSidebar();
+    renderMain();
+    showToast('Shop deleted.');
+  }
+
+  /* ── Create shop modal ── */
+  function openCreateModal() {
+    document.getElementById('new-shop-name').value = '';
+    renderCreateColors();
+    document.getElementById('create-modal').classList.add('open');
+    setTimeout(() => document.getElementById('new-shop-name').focus(), 80);
+  }
+
+  function renderCreateColors() {
+    document.getElementById('create-color-picker').innerHTML = COLORS.map(c =>
+      `<div class="color-dot${createColorSel === c ? ' selected' : ''}" style="background:${c}" onclick="selectCreateColor('${c}')"></div>`
+    ).join('');
+  }
+
+  function selectCreateColor(c) { createColorSel = c; renderCreateColors(); }
+
+  function createShop() {
+    const name = document.getElementById('new-shop-name').value.trim();
+    if (!name) { alert('Please enter a shop name.'); return; }
+    const shop = {
+      id: uid(),
+      name,
+      category: document.getElementById('new-shop-cat').value,
+      color: createColorSel,
+      active: false,
+      description: '',
+      owner: '',
+      email: '',
+      products: []
+    };
+    shops.push(shop);
+    closeModal('create-modal');
+    selectShop(shop.id);
+    showToast(`"${name}" created!`);
+  }
+
+  /* ── Product modal ── */
+  function openProductModal(idx = null) {
+    editProdIdx = idx;
+    document.getElementById('product-modal-title').textContent = idx !== null ? 'Edit product' : 'Add product';
+    document.getElementById('delete-prod-btn').style.display = idx !== null ? 'inline-block' : 'none';
+    const shop = shops.find(s => s.id === activeShopId);
+    if (idx !== null && shop) {
+      const p = shop.products[idx];
+      document.getElementById('prod-name').value  = p.name;
+      document.getElementById('prod-price').value = p.price;
+      document.getElementById('prod-stock').value = p.stock;
+      document.getElementById('prod-icon').value  = p.icon || '';
+    } else {
+      document.getElementById('prod-name').value  = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-stock').value = '';
+      document.getElementById('prod-icon').value  = '';
+    }
+    document.getElementById('product-modal').classList.add('open');
+    setTimeout(() => document.getElementById('prod-name').focus(), 80);
+  }
+
+  function editProduct(idx) { openProductModal(idx); }
+
+  function saveProduct() {
+    const name  = document.getElementById('prod-name').value.trim();
+    const price = parseFloat(document.getElementById('prod-price').value) || 0;
+    const stock = parseInt(document.getElementById('prod-stock').value)   || 0;
+    const icon  = document.getElementById('prod-icon').value.trim() || 'package';
+    if (!name) { alert('Please enter a product name.'); return; }
+    const shop = shops.find(s => s.id === activeShopId);
+    if (!shop) return;
+    if (editProdIdx !== null) {
+      shop.products[editProdIdx] = { name, price, stock, icon };
+    } else {
+      shop.products.push({ name, price, stock, icon });
+    }
+    closeModal('product-modal');
+    renderMain();
+    showToast('Product saved!');
+  }
+
+  function deleteProduct() {
+    if (!confirm('Remove this product?')) return;
+    const shop = shops.find(s => s.id === activeShopId);
+    if (shop && editProdIdx !== null) {
+      shop.products.splice(editProdIdx, 1);
+    }
+    closeModal('product-modal');
+    renderMain();
+    showToast('Product removed.');
+  }
+
+  /* ── Utilities ── */
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* Close modals on backdrop click */
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  });
+
+  /* Init */
+  renderSidebar();
+  renderMain();
+</script>
+</body>
+</html>

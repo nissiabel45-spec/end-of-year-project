@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+    .admin-title { font-size: 24px; font-weight: 800; color: #1c1c1c; margin: 0 0 4px; }
+    .admin-sub   { font-size: 14px; color: #6b7280; margin: 0 0 22px; }
+
+    .admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px; overflow-x: auto; }
+    .admin-tab  { padding: 12px 18px; font-size: 14px; font-weight: 500; color: #6b7280;
+                  background: none; border: none; border-bottom: 2px solid transparent;
+                  cursor: pointer; white-space: nowrap; }
+    .admin-tab.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+    .admin-tab:hover:not(.active) { color: #1c1c1c; }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    .stat-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
+    .stat-card  { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+    .stat-card.clickable { cursor: pointer; transition: transform .15s, box-shadow .15s; }
+    .stat-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(37,99,235,0.18); }
+    .stat-card.clickable .stat-label::after { content: ' →'; color: #2563eb; opacity: 0; transition: opacity .15s; }
+    .stat-card.clickable:hover .stat-label::after { opacity: 1; }
+    .stat-num   { font-size: 28px; font-weight: 800; color: #2563eb; }
+    .stat-label { font-size: 13px; color: #6b7280; margin-top: 2px; }
+
+    .vcard { background:#fff; border-radius:14px; padding:18px; box-shadow:0 2px 12px rgba(0,0,0,0.07);
+             margin-bottom:16px; display:grid; grid-template-columns: 120px 1fr auto; gap:18px; align-items:start; }
+    .vcard-photo { width:120px; height:120px; border-radius:10px; background:#f3f4f6; overflow:hidden;
+                   display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af; text-align:center; }
+    .vcard-photo img { width:100%; height:100%; object-fit:cover; cursor:pointer; }
+    .vcard-name  { font-size:16px; font-weight:700; color:#1c1c1c; display:flex; align-items:center; gap:8px; }
+    .vbadge { font-size:11px; font-weight:600; padding:2px 9px; border-radius:20px; }
+    .vbadge.ok   { background:#dcfce7; color:#15803d; }
+    .vbadge.no   { background:#fef3c7; color:#92400e; }
+    .vmeta { font-size:13px; color:#6b7280; margin-top:4px; }
+    .vans  { margin-top:10px; font-size:13px; color:#374151; }
+    .vans-row { display:flex; gap:6px; margin-bottom:3px; }
+    .vans-q { color:#6b7280; }
+    .vcard-actions { display:flex; flex-direction:column; gap:8px; min-width:130px; }
+
+    .btn-a { padding:8px 14px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-grant  { background:#16a34a; color:#fff; }
+    .btn-revoke { background:#f3f4f6; color:#374151; }
+    .btn-del    { background:#fee2e2; color:#b91c1c; }
+    .btn-dismiss{ background:#eff6ff; color:#2563eb; }
+
+    .admin-filter { margin-bottom:16px; display:flex; gap:8px; }
+    .admin-filter button { padding:6px 14px; border:1.5px solid #e5e7eb; background:#fff; border-radius:20px;
+                           font-size:13px; cursor:pointer; color:#374151; }
+    .admin-filter button.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+
+    .rev-card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); margin-bottom:14px; }
+    .rev-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+    .rev-count{ background:#fee2e2; color:#b91c1c; font-size:11px; font-weight:700; padding:2px 9px; border-radius:20px; }
+
+    .atable { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden;
+              box-shadow:0 2px 10px rgba(0,0,0,0.06); }
+    .atable th, .atable td { text-align:left; padding:11px 14px; font-size:13px; border-bottom:1px solid #f3f4f6; }
+    .atable th { background:#f9fafb; color:#6b7280; font-weight:600; }
+    .atable td { color:#374151; }
+    .a-empty { text-align:center; color:#9ca3af; padding:40px 20px; }
+    @media (max-width:640px){ .vcard{ grid-template-columns:1fr; } .vcard-photo{ width:100%; height:160px; } }
+  </style>
+</head>
+<body>
+
+  <div id="header-placeholder"></div>
+
+  <main class="page-content">
+    <div class="admin-wrap">
+      <h1 class="admin-title"><i class="ti ti-shield-check" style="color:#2563eb;"></i> Admin Dashboard</h1>
+      <p class="admin-sub">Manage shop verification, moderate reviews, and oversee the marketplace.</p>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="showAdminPanel('overview', this)">Overview</button>
+        <button class="admin-tab" onclick="showAdminPanel('verification', this)">Shop Verification</button>
+        <button class="admin-tab" onclick="showAdminPanel('products', this)">Product Approval</button>
+        <button class="admin-tab" onclick="showAdminPanel('reviews', this)">Reported Reviews</button>
+        <button class="admin-tab" onclick="showAdminPanel('manage', this)">Shops &amp; Users</button>
+      </div>
+
+      <div class="admin-panel active" id="apanel-overview">
+        <div class="stat-grid" id="stat-grid"><p class="a-empty">Loading stats…</p></div>
+      </div>
+
+      <div class="admin-panel" id="apanel-verification">
+        <div class="admin-filter" id="verif-filter">
+          <button class="active" onclick="setVerifFilter('all', this)">All</button>
+          <button onclick="setVerifFilter('pending', this)">Pending</button>
+          <button onclick="setVerifFilter('verified', this)">Verified</button>
+        </div>
+        <div id="verif-list"><p class="a-empty">Loading…</p></div>
+      </div>
+
+      <div class="admin-panel" id="apanel-products">
+        <p style="font-size:13px;color:#6b7280;margin:0 0 14px;">Products listed by sellers stay hidden from the marketplace until you approve them here.</p>
+        <div id="pending-products"><p class="a-empty">Loading…</p></div>
+      </div>
+
+      <div class="admin-panel" id="apanel-reviews">
+        <div id="reported-list"><p class="a-empty">Loading…</p></div>
+      </div>
+
+      <div class="admin-panel" id="apanel-manage">
+        <h3 style="font-size:15px;font-weight:700;color:#1c1c1c;margin:0 0 12px;">All Shops</h3>
+        <div style="overflow-x:auto;margin-bottom:30px;"><table class="atable" id="shops-table"></table></div>
+        <h3 style="font-size:15px;font-weight:700;color:#1c1c1c;margin:0 0 12px;">All Users</h3>
+        <div style="overflow-x:auto;"><table class="atable" id="users-table"></table></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    /* ── GATE: admins only (RPCs are the real security; this is UX) ── */
+    (function gate() {
+      const u = (typeof Auth !== 'undefined') ? Auth.getUser() : null;
+      if (!u || u.role !== 'admin') { window.location.replace('home.html'); }
+    })();
+
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* Readable labels for the verification questionnaire */
+    const VQ_LABELS = {
+      vq1: { _q: 'Business type',     individual:'Individual seller', small_biz:'Small business', registered:'Registered company' },
+      vq2: { _q: 'Years in business', new:'Just starting', '1year':'Less than 1 year', '1-3years':'1–3 years', '3plus':'3+ years' },
+      vq3: { _q: 'Sells via',         physical:'Physical store', social:'Social media', both:'Both', first_time:'First time selling' },
+      vq4: { _q: 'Agreed to terms',   yes:'Yes', no:'No' },
+      'vq-delivery': { _q: 'Delivery', yes:'Offers delivery', no:'No delivery', unknown:'Not specified' }
+    };
+    function decodeAnswers(ans) {
+      if (!ans || typeof ans !== 'object') return '<div class="vmeta">No answers recorded.</div>';
+      const rows = Object.keys(VQ_LABELS)
+        .filter(k => ans[k] != null)
+        .map(k => {
+          const map = VQ_LABELS[k];
+          const val = map[ans[k]] || ans[k];
+          return `<div class="vans-row"><span class="vans-q">${map._q}:</span> <strong>${escHtml(val)}</strong></div>`;
+        }).join('');
+      return rows ? `<div class="vans">${rows}</div>` : '<div class="vmeta">No answers recorded.</div>';
+    }
+
+    let _verifShops = [];
+    let _verifFilter = 'all';
+
+    function showAdminPanel(name, btn) {
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('apanel-' + name).classList.add('active');
+      btn.classList.add('active');
+      if (name === 'overview')     loadStats();
+      if (name === 'verification') loadVerification();
+      if (name === 'products')     loadPendingProducts();
+      if (name === 'reviews')      loadReported();
+      if (name === 'manage')       loadManage();
+    }
+
+    /* ── Navigation shortcuts (from the Overview stat cards) ── */
+    const TAB_INDEX = { overview: 0, verification: 1, products: 2, reviews: 3, manage: 4 };
+    function goToTab(name) {
+      const btn = document.querySelectorAll('.admin-tab')[TAB_INDEX[name]];
+      if (btn) showAdminPanel(name, btn);
+    }
+    function goToVerification(filter) {
+      _verifFilter = filter || 'all';
+      const fbtns = document.querySelectorAll('#verif-filter button');
+      const fidx  = { all: 0, pending: 1, verified: 2 }[_verifFilter] ?? 0;
+      fbtns.forEach(b => b.classList.remove('active'));
+      if (fbtns[fidx]) fbtns[fidx].classList.add('active');
+      goToTab('verification');   /* loadVerification() renders using _verifFilter */
+    }
+    function goToManageUsers() {
+      goToTab('manage');
+      setTimeout(() => document.getElementById('users-table')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 250);
+    }
+
+    /* ── Overview ── */
+    async function loadStats() {
+      const el = document.getElementById('stat-grid');
+      try {
+        const s = await AdminAPI.stats();
+        /* [label, value, onclick action | null] */
+        const cards = [
+          ['Total shops',      s.shops,            "goToTab('manage')"],
+          ['Verified',         s.verified_shops,   "goToVerification('verified')"],
+          ['Pending',          s.pending_shops,    "goToVerification('pending')"],
+          ['Users',            s.users,            "goToManageUsers()"],
+          ['Sellers',          s.sellers,          "goToManageUsers()"],
+          ['Buyers',           s.buyers,           "goToManageUsers()"],
+          ['Products',         s.products,         "goToTab('products')"],
+          ['Pending products', s.pending_products, "goToTab('products')"],
+          ['Orders',           s.orders,           null],
+          ['Reviews',          s.reviews,          "goToTab('reviews')"],
+          ['Reported reviews', s.reported_reviews, "goToTab('reviews')"]
+        ];
+        el.innerHTML = cards.map(([label, num, action]) => `
+          <div class="stat-card${action ? ' clickable' : ''}"${action ? ` onclick="${action}"` : ''}>
+            <div class="stat-num">${num ?? 0}</div><div class="stat-label">${label}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        el.innerHTML = `<p class="a-empty">Could not load stats: ${escHtml(e.message)}</p>`;
+      }
+    }
+
+    /* ── Shop Verification ── */
+    function setVerifFilter(f, btn) {
+      _verifFilter = f;
+      document.querySelectorAll('#verif-filter button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderVerification();
+    }
+
+    async function loadVerification() {
+      const el = document.getElementById('verif-list');
+      el.innerHTML = '<p class="a-empty">Loading…</p>';
+      try {
+        _verifShops = await AdminAPI.allShops();
+        renderVerification();
+      } catch (e) {
+        el.innerHTML = `<p class="a-empty">Could not load shops: ${escHtml(e.message)}</p>`;
+      }
+    }
+
+    function renderVerification() {
+      const el = document.getElementById('verif-list');
+      let list = _verifShops;
+      if (_verifFilter === 'pending')  list = _verifShops.filter(s => !s.verified);
+      if (_verifFilter === 'verified') list = _verifShops.filter(s => s.verified);
+
+      if (!list.length) { el.innerHTML = '<p class="a-empty">No shops in this view.</p>'; return; }
+
+      el.innerHTML = list.map(s => {
+        const logo = s.logo_url
+          ? `<img src="${escHtml(s.logo_url)}" onclick="window.open('${escHtml(s.logo_url)}','_blank')" alt="">`
+          : `<span style="font-size:36px;">${s.emoji || '🏪'}</span>`;
+        const mapHint = s.map_address
+          ? `<div class="vmeta"><i class="ti ti-map-pin"></i> Map: ${escHtml(s.map_address)}</div>`
+          : (s.lat ? `<div class="vmeta"><i class="ti ti-map-pin"></i> Pin: ${s.lat}, ${s.lng}</div>` : '');
+        return `
+          <div class="vcard">
+            <div class="vcard-photo" id="vphoto-${s.id}">${logo}</div>
+            <div>
+              <div class="vcard-name">
+                ${escHtml(s.name)}
+                <span class="vbadge ${s.verified ? 'ok' : 'no'}">${s.verified ? '✓ Verified' : 'Pending'}</span>
+              </div>
+              <div class="vmeta"><i class="ti ti-tag"></i> ${escHtml(s.cat || '—')} &nbsp;·&nbsp; <i class="ti ti-map-pin"></i> ${escHtml(s.loc || '—')}</div>
+              ${mapHint}
+              ${decodeAnswers(s.verif_answers)}
+              <div class="vmeta" style="margin-top:8px;">Verification photo:</div>
+              <div id="verifimg-${s.id}" class="vmeta">${s.verif_photo_url ? 'Loading photo…' : 'No photo submitted.'}</div>
+            </div>
+            <div class="vcard-actions">
+              ${s.verified
+                ? `<button class="btn-a btn-revoke" onclick="setVerified('${s.id}', false)">Revoke badge</button>`
+                : `<button class="btn-a btn-grant" onclick="setVerified('${s.id}', true)">Grant badge</button>`}
+              <a class="btn-a btn-dismiss" style="text-align:center;text-decoration:none;" href="shop.html?id=${s.id}" target="_blank">View shop</a>
+            </div>
+          </div>`;
+      }).join('');
+
+      /* Load private verification photos as signed URLs (async, post-render) */
+      list.forEach(async s => {
+        if (!s.verif_photo_url) return;
+        try {
+          const url = await AdminAPI.verifPhotoUrl(s.verif_photo_url);
+          const holder = document.getElementById('verifimg-' + s.id);
+          if (url && holder) {
+            holder.innerHTML = `<img src="${url}" onclick="window.open('${url}','_blank')" alt="verification photo"
+              style="max-width:240px;width:100%;border-radius:10px;border:1px solid #e5e7eb;cursor:pointer;display:block;margin-top:4px;">`;
+          } else if (holder) {
+            holder.textContent = 'Photo unavailable.';
+          }
+        } catch (_) {}
+      });
+    }
+
+    async function setVerified(shopId, verified) {
+      try {
+        await AdminAPI.setVerified(shopId, verified);
+        const s = _verifShops.find(x => x.id === shopId);
+        if (s) s.verified = verified;
+        renderVerification();
+      } catch (e) { alert('Could not update: ' + e.message); }
+    }
+
+    /* ── Product Approval ── */
+    async function loadPendingProducts() {
+      const el = document.getElementById('pending-products');
+      el.innerHTML = '<p class="a-empty">Loading…</p>';
+      try {
+        const products = await AdminAPI.pendingProducts();
+        if (!products.length) { el.innerHTML = '<p class="a-empty">No products awaiting approval. 🎉</p>'; return; }
+        el.innerHTML = products.map(p => {
+          const media = p.image_url
+            ? `<img src="${escHtml(p.image_url)}" onclick="window.open('${escHtml(p.image_url)}','_blank')" alt="">`
+            : (p.video_url
+                ? `<span style="font-size:30px;">🎬</span>`
+                : `<i class="ti ti-package" style="font-size:34px;color:#9ca3af;"></i>`);
+          const price = (typeof p.price === 'number') ? p.price.toLocaleString() : p.price;
+          return `
+          <div class="vcard" id="prodcard-${p.id}">
+            <div class="vcard-photo" id="prodimg-${p.id}">${media}</div>
+            <div>
+              <div class="vcard-name">${escHtml(p.name)}<span class="vbadge no">Pending</span></div>
+              <div class="vmeta"><i class="ti ti-building-store"></i> ${escHtml(p.shops?.name || 'Unknown shop')}
+                &nbsp;·&nbsp; <i class="ti ti-tag"></i> ${escHtml(p.cat || '—')}</div>
+              <div class="vmeta">FCFA ${price} &nbsp;·&nbsp; Stock: ${p.stock ?? '—'}</div>
+              ${p.description ? `<div class="vans" style="margin-top:8px;">${escHtml(p.description)}</div>` : ''}
+            </div>
+            <div class="vcard-actions">
+              <button class="btn-a btn-grant" onclick="approveProduct('${p.id}')">Approve</button>
+              <button class="btn-a btn-del" onclick="rejectProduct('${p.id}')">Reject</button>
+            </div>
+          </div>`;
+        }).join('');
+      } catch (e) {
+        el.innerHTML = `<p class="a-empty">Could not load: ${escHtml(e.message)}</p>`;
+      }
+    }
+
+    async function approveProduct(id) {
+      try { await AdminAPI.approveProduct(id); document.getElementById('prodcard-' + id)?.remove(); refreshIfEmpty(); }
+      catch (e) { alert('Could not approve: ' + e.message); }
+    }
+    async function rejectProduct(id) {
+      if (!confirm('Reject and permanently delete this product?')) return;
+      try { await AdminAPI.rejectProduct(id); document.getElementById('prodcard-' + id)?.remove(); refreshIfEmpty(); }
+      catch (e) { alert('Could not reject: ' + e.message); }
+    }
+    function refreshIfEmpty() {
+      const el = document.getElementById('pending-products');
+      if (el && !el.querySelector('.vcard')) el.innerHTML = '<p class="a-empty">No products awaiting approval. 🎉</p>';
+    }
+
+    /* ── Reported Reviews ── */
+    async function loadReported() {
+      const el = document.getElementById('reported-list');
+      el.innerHTML = '<p class="a-empty">Loading…</p>';
+      try {
+        const reviews = await AdminAPI.reportedReviews();
+        if (!reviews.length) { el.innerHTML = '<p class="a-empty">No reported reviews. 🎉</p>'; return; }
+        el.innerHTML = reviews.map(r => `
+          <div class="rev-card" id="revcard-${r.id}">
+            <div class="rev-head">
+              <span class="rev-count">⚑ ${r.reported} report${r.reported !== 1 ? 's' : ''}</span>
+              <strong style="font-size:14px;color:#1c1c1c;">${escHtml(r.reviewer_name || 'Anonymous')}</strong>
+              <span style="font-size:13px;color:#6b7280;">on ${escHtml(r.shop_name || 'a shop')}</span>
+              <span style="color:#d4a017;font-size:13px;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+              <span style="margin-left:auto;font-size:12px;color:#9ca3af;">${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+            </div>
+            <div style="font-size:14px;color:#374151;line-height:1.5;margin-bottom:10px;">${escHtml(r.text)}</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-a btn-del" onclick="adminDeleteReview('${r.id}')">Delete review</button>
+              <button class="btn-a btn-dismiss" onclick="adminDismissReports('${r.id}')">Dismiss reports</button>
+            </div>
+          </div>`).join('');
+      } catch (e) {
+        el.innerHTML = `<p class="a-empty">Could not load: ${escHtml(e.message)}</p>`;
+      }
+    }
+
+    async function adminDeleteReview(id) {
+      if (!confirm('Permanently delete this review?')) return;
+      try { await AdminAPI.deleteReview(id); document.getElementById('revcard-' + id)?.remove(); }
+      catch (e) { alert('Could not delete: ' + e.message); }
+    }
+    async function adminDismissReports(id) {
+      try { await AdminAPI.dismissReports(id); document.getElementById('revcard-' + id)?.remove(); }
+      catch (e) { alert('Could not dismiss: ' + e.message); }
+    }
+
+    /* ── Shops & Users ── */
+    async function loadManage() {
+      const shopsT = document.getElementById('shops-table');
+      const usersT = document.getElementById('users-table');
+      shopsT.innerHTML = '<tr><td class="a-empty">Loading…</td></tr>';
+      usersT.innerHTML = '<tr><td class="a-empty">Loading…</td></tr>';
+      try {
+        const [shops, users] = await Promise.all([AdminAPI.allShops(), AdminAPI.users()]);
+        shopsT.innerHTML = `
+          <tr><th>Shop</th><th>Category</th><th>Location</th><th>Status</th><th>Actions</th></tr>
+          ${shops.map(s => `
+            <tr id="shoprow-${s.id}">
+              <td><strong>${escHtml(s.name)}</strong></td>
+              <td>${escHtml(s.cat || '—')}</td>
+              <td>${escHtml(s.loc || '—')}</td>
+              <td><span class="vbadge ${s.verified ? 'ok' : 'no'}">${s.verified ? '✓ Verified' : 'Pending'}</span></td>
+              <td style="white-space:nowrap;">
+                <button class="btn-a ${s.verified ? 'btn-revoke' : 'btn-grant'}" style="padding:5px 10px;"
+                  onclick="manageToggleVerified('${s.id}', ${!s.verified})">${s.verified ? 'Unverify' : 'Verify'}</button>
+                <button class="btn-a btn-del" style="padding:5px 10px;" onclick="manageDeleteShop('${s.id}')">Delete</button>
+              </td>
+            </tr>`).join('') || '<tr><td colspan="5" class="a-empty">No shops.</td></tr>'}`;
+        usersT.innerHTML = `
+          <tr><th>Name</th><th>Role</th><th>City</th><th>Joined</th></tr>
+          ${users.map(u => `
+            <tr>
+              <td><strong>${escHtml(u.name)}</strong></td>
+              <td>${escHtml(u.role)}</td>
+              <td>${escHtml(u.city || '—')}</td>
+              <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
+            </tr>`).join('') || '<tr><td colspan="4" class="a-empty">No users.</td></tr>'}`;
+      } catch (e) {
+        shopsT.innerHTML = `<tr><td class="a-empty">Could not load: ${escHtml(e.message)}</td></tr>`;
+        usersT.innerHTML = '';
+      }
+    }
+
+    async function manageToggleVerified(shopId, verified) {
+      try { await AdminAPI.setVerified(shopId, verified); loadManage(); }
+      catch (e) { alert('Could not update: ' + e.message); }
+    }
+    async function manageDeleteShop(shopId) {
+      if (!confirm('Permanently delete this shop and all its products & reviews?')) return;
+      try { await AdminAPI.deleteShop(shopId); document.getElementById('shoprow-' + shopId)?.remove(); }
+      catch (e) { alert('Could not delete: ' + e.message); }
+    }
+
+    /* Initial load */
+    loadStats();
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => { const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html)); })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>

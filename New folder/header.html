@@ -1,0 +1,671 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopSwift</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    /* ===================================
+       ROW 1 - fixed top bar (55px)
+    =================================== */
+    .header {
+      height: 55px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #fff;
+      border-bottom: 1px solid rgb(228, 228, 228);
+      z-index: 100;
+    }
+
+    .left-section {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .logo { height: 150px; }
+
+    .middle-section {
+      flex: 1;
+      margin-left: 70px;
+      margin-right: 20px;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .search-bar {
+      flex: 1;
+      height: 37px;
+      padding-left: 12px;
+      font-size: 15px;
+      border: 1px solid rgb(192, 192, 192);
+      border-radius: 20px;
+      box-shadow: inset 1px 2px 5px rgba(0,0,0,0.05);
+      outline: none;
+      min-width: 0;
+    }
+    .search-bar::placeholder { font-family: Roboto, Arial, sans-serif; font-size: 15px; }
+
+    .search-button {
+      flex-shrink: 0;
+      width: 90px;
+      height: 36px;
+      padding: 0;
+      background: #7494ec;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #fff;
+      font-weight: 500;
+      margin-left: 10px;
+      transition: background 0.2s;
+    }
+    .search-button:hover { background: #6884d3; }
+
+    .right-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+
+    .notifications-icon,
+    .shopping-cart {
+      height: 24px;
+      cursor: pointer;
+    }
+
+    /* icon wrapper + notification badge */
+    .icon-wrap { position: relative; display: inline-flex; align-items: center; }
+    .hdr-badge {
+      position: absolute;
+      top: -5px; right: -7px;
+      min-width: 16px; height: 16px;
+      background: #ef4444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    /* ── Notification dropdown ── */
+    .notif-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 12px);
+      right: -8px;
+      width: 340px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+      z-index: 500;
+      overflow: hidden;
+    }
+    .notif-dropdown.open { display: block; }
+    .notif-dropdown::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      right: 15px;
+      width: 11px;
+      height: 11px;
+      background: #fff;
+      border-left: 1px solid #e5e7eb;
+      border-top: 1px solid #e5e7eb;
+      transform: rotate(45deg);
+    }
+    .notif-dropdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .notif-dropdown-header strong { font-size: 14px; font-weight: 700; color: #1c1c1c; }
+    .notif-mark-read {
+      font-size: 12px; color: #2563eb; background: none;
+      border: none; cursor: pointer; padding: 0; font-weight: 500;
+    }
+    .notif-mark-read:hover { text-decoration: underline; }
+    .notif-list { max-height: 360px; overflow-y: auto; }
+    .notif-item {
+      display: flex; align-items: flex-start; gap: 11px;
+      padding: 11px 16px; border-bottom: 1px solid #f9fafb;
+      text-decoration: none; color: inherit;
+      transition: background 0.12s; position: relative;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: #f9f8f6; }
+    .notif-item.unread { background: #f0f7ff; }
+    .notif-item.unread:hover { background: #e4f0ff; }
+    .notif-item-avatar {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: #e0f2fe; display: flex; align-items: center;
+      justify-content: center; font-size: 20px; flex-shrink: 0;
+    }
+    .notif-item-body { flex: 1; min-width: 0; padding-right: 10px; }
+    .notif-item-title { font-size: 13px; font-weight: 600; color: #1c1c1c; margin-bottom: 2px; }
+    .notif-item-preview {
+      font-size: 12.5px; color: #6b7280;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .notif-item-time { font-size: 11px; color: #9ca3af; }
+    .notif-item-dot {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      width: 8px; height: 8px; border-radius: 50%; background: #2563eb; flex-shrink: 0;
+    }
+    .notif-loading, .notif-empty {
+      text-align: center; padding: 2.5rem 1rem;
+      font-size: 13px; color: #9ca3af;
+    }
+    .notif-footer {
+      padding: 10px 16px; border-top: 1px solid #f3f4f6; text-align: center;
+    }
+    .notif-footer a {
+      font-size: 13px; color: #2563eb; text-decoration: none; font-weight: 500;
+    }
+    .notif-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .notif-dropdown {
+        position: fixed; top: 99px; left: 0; right: 0;
+        width: 100%; border-radius: 0 0 12px 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.14);
+      }
+      .notif-dropdown::before { display: none; }
+    }
+
+    /* hamburger - hidden on desktop */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #333;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* mobile search bar - hidden on desktop */
+    .mobile-search { display: none; }
+
+    /* ===================================
+       ROW 2 - fixed nav bar (46px)
+       position: fixed keeps it visible
+       on scroll, consistent across pages
+    =================================== */
+    .second-header {
+      position: fixed;
+      top: 55px;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      background: #fff;
+      border-bottom: 1px solid rgb(228, 228, 228);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 46px;
+    }
+
+    /* nav links container - scrolls horizontally without showing a bar */
+    .pages {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      overflow-x: auto;
+      scrollbar-width: none;       /* Firefox */
+      -ms-overflow-style: none;    /* IE/Edge */
+      gap: 0;
+      min-width: 0;
+    }
+    .pages::-webkit-scrollbar { display: none; }
+
+    /* reset paragraph margins inside nav */
+    .pages p,
+    .second-header p { margin: 0; }
+
+    /* individual nav link */
+    .about {
+      padding: 0 12px;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      color: #333;
+      user-select: none;
+      transition: color 0.2s;
+      font-family: 'DM Sans', Arial, sans-serif;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .about:hover { color: #7494ec; }
+
+
+    /* Sign In button (right side of row 2) */
+    .nav-signin-wrap {
+      flex-shrink: 0;
+      padding-left: 16px;
+    }
+    .signin-button {
+      display: inline-block;
+      padding: 7px 20px;
+      background: #7494ec;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #fff;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background 0.2s;
+      font-family: 'DM Sans', Arial, sans-serif;
+    }
+    .signin-button:hover { background: #6884d3; }
+
+    /* ===================================
+       TABLET  481px - 768px
+    =================================== */
+    /* -- Overlay behind mobile drawer -- */
+    .nav-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 98;
+    }
+    .nav-overlay.show { display: block; }
+
+    /* -- TABLET  641px - 900px -- */
+    @media (max-width: 900px) {
+      .about, .p1 { font-size: 12px; }
+      .about { padding: 0 8px; }
+    }
+
+    /* -- MEDIUM  481px - 640px -- */
+    @media (max-width: 640px) {
+      .middle-section { margin-left: 10px; margin-right: 10px; }
+      .search-button  { width: 72px; font-size: 13px; }
+      .second-header  { padding: 0 12px; }
+      .hide-sm { display: none !important; }
+    }
+
+    /* -- MOBILE  <= 480px -- */
+    @media (max-width: 480px) {
+      .middle-section { display: none; }
+      .right-section  { display: none; }
+      .hamburger { display: flex; margin-left: auto; }
+
+      /* mobile search row */
+      .mobile-search {
+        display: flex; position: fixed;
+        top: 55px; left: 0; right: 0;
+        background: #fff; border-bottom: 1px solid rgb(228,228,228);
+        align-items: center; padding: 6px 12px; gap: 8px; z-index: 99;
+      }
+      .mobile-search input {
+        flex: 1; height: 34px; padding-left: 10px; font-size: 14px;
+        border: 1px solid rgb(192,192,192); border-radius: 20px; outline: none;
+      }
+      .mobile-search button {
+        flex-shrink: 0; width: 70px; height: 34px; padding: 0; font-size: 13px;
+        background: #7494ec; border-radius: 20px; border: none;
+        color: #fff; font-weight: 500; cursor: pointer;
+      }
+
+      /* row 2 = slide-in side drawer */
+      .second-header {
+        top: 0; bottom: 0; left: -280px; right: auto;
+        width: 280px; height: 100vh; max-height: 100vh;
+        overflow-y: auto; flex-direction: column;
+        align-items: flex-start; justify-content: flex-start;
+        padding: 60px 0 24px; border-bottom: none;
+        border-right: 1px solid #e5e7eb;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.12);
+        transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
+        z-index: 999;
+      }
+      .second-header.open { left: 0; }
+
+      .pages {
+        flex-direction: column; align-items: flex-start;
+        width: 100%; overflow: visible;
+      }
+      .about {
+        display: block; width: 100%;
+        padding: 13px 22px; font-size: 14px;
+        border-bottom: 1px solid #f3f4f6; color: #1f2937;
+      }
+      .about:hover { background: #f0f4ff; color: #2563eb; }
+      .p1 { width: 100%; padding: 13px 22px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+
+      .nav-signin-wrap { width: 100%; padding: 16px 22px 0; }
+      .signin-button { width: 100%; padding: 12px; font-size: 14px; text-align: center; border-radius: 10px; }
+      .hide-sm { display: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+
+    <!-- ROW 1: top bar -->
+    <div class="header">
+      <div class="left-section">
+        <img class="logo" src="assets/Copilot_20260506_175746.png" alt="ShopSwift Logo">
+      </div>
+
+      <div class="middle-section">
+        <input class="search-bar" type="text" placeholder="Search products, shops...">
+        <button type="button" class="search-button">Search</button>
+      </div>
+
+      <div class="right-section">
+        <span class="icon-wrap" id="bell-wrap" style="cursor:pointer;" title="Messages &amp; notifications">
+          <img class="notifications-icon" src="assets/notifications.svg" alt="Notifications" onclick="handleBellClick()">
+          <span class="hdr-badge" id="notif-count" onclick="handleBellClick()"></span>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <strong>Notifications</strong>
+              <button class="notif-mark-read" onclick="markAllNotifsRead(event)">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-loading">Loading…</div>
+            </div>
+            <div class="notif-footer">
+              <a href="#" onclick="viewAllNotifs(event)">View all messages</a>
+            </div>
+          </div>
+        </span>
+        <span class="icon-wrap" onclick="window.location.href='cart.html'" style="cursor:pointer;">
+          <i class="ti ti-shopping-cart" style="font-size:24px;color:#555;"></i>
+          <span class="hdr-badge" id="cart-count"></span>
+        </span>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- mobile search (visible <=480px) -->
+    <div class="mobile-search">
+      <input type="text" placeholder="Search...">
+      <button type="button">Search</button>
+    </div>
+
+    <!-- ✅ FIX 3: overlay backdrop for mobile drawer -->
+    <div class="nav-overlay" id="navOverlay"></div>
+
+    <!-- ROW 2: nav bar -->
+    <div class="second-header" id="secondHeader">
+      <div class="pages">
+
+  <a class="about" href="home.html">
+    <img src="assets/home.svg" alt="" style="height:15px;margin-right:5px;vertical-align:middle;">
+    HOME
+  </a>
+
+  <a class="about" href="search and browse.html">BROWSE SHOPS</a>
+  <a class="about" href="cart.html">CART</a>
+  <a class="about" href="checkout.html">CHECKOUT</a>
+  <a class="about" href="order-tracking.html">TRACK ORDER</a>
+  <a class="about" id="sell-link" href="#" onclick="handleSellClick(); return false;">SELL ON SHOPSWIFT</a>
+  <a class="about" href="profile.html">MY PROFILE</a>
+  <a class="about" id="admin-link" href="admin.html" style="display:none;color:#2563eb;font-weight:600;">ADMIN</a>
+
+</div>
+
+      <div class="nav-signin-wrap" id="nav-auth-wrap">
+        <button onclick="window.location.href='project.html'" class="signin-button" id="nav-signin-btn">Sign in</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sign-in prompt modal -->
+  <div id="signin-prompt" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.50);align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;border-radius:18px;padding:32px 28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.22);">
+      <div style="font-size:44px;margin-bottom:10px;">🔒</div>
+      <h3 style="margin:0 0 6px;font-size:17px;font-weight:700;color:#1c1c1c;" id="signin-prompt-msg">Sign in to continue</h3>
+      <p style="font-size:13px;color:#6b7280;margin:0 0 22px;line-height:1.5;">Create a free account or sign in to use this feature.</p>
+      <div style="display:flex;gap:10px;">
+        <button onclick="dismissSigninPrompt()" style="flex:1;padding:11px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px;cursor:pointer;color:#374151;font-weight:500;">Cancel</button>
+        <button onclick="goToSignin()" style="flex:2;padding:11px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Sign In / Register</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* -- Hamburger toggles row-2 drawer + overlay on mobile -- */
+    const hamburger    = document.getElementById('hamburger');
+    const secondHeader = document.getElementById('secondHeader');
+    const navOverlay   = document.getElementById('navOverlay'); // ✅ FIX 3
+
+    function openDrawer() {
+      hamburger.classList.add('open');
+      secondHeader.classList.add('open');
+      navOverlay.classList.add('show');
+    }
+    function closeDrawer() {
+      hamburger.classList.remove('open');
+      secondHeader.classList.remove('open');
+      navOverlay.classList.remove('show');
+    }
+
+    hamburger.addEventListener('click', () => {
+      secondHeader.classList.contains('open') ? closeDrawer() : openDrawer();
+    });
+    navOverlay.addEventListener('click', closeDrawer); // ✅ FIX 3: tap outside closes drawer
+
+    /* -- SELL link -- */
+    function handleSellClick() {
+      try {
+        const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+        if (user && user.role === 'seller') {
+          window.location.href = 'seller-dashboard.html';
+        } else {
+          window.location.href = 'register.html';
+        }
+      } catch {
+        window.location.href = 'register.html';
+      }
+    }
+
+    /* -- Bell icon -- */
+    function handleBellClick() {
+      const dropdown = document.getElementById('notifDropdown');
+      if (!dropdown) return;
+      try {
+        const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+        if (!user) { window.location.href = 'project.html'; return; }
+      } catch(_) { window.location.href = 'project.html'; return; }
+
+      if (dropdown.classList.contains('open')) {
+        dropdown.classList.remove('open');
+      } else {
+        dropdown.classList.add('open');
+        loadNotifDropdown();
+      }
+    }
+
+    function closeNotifDropdown() {
+      const d = document.getElementById('notifDropdown');
+      if (d) d.classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('notifDropdown');
+      const bellWrap = document.getElementById('bell-wrap');
+      if (dropdown && dropdown.classList.contains('open')) {
+        if (!dropdown.contains(e.target) && bellWrap && !bellWrap.contains(e.target)) {
+          dropdown.classList.remove('open');
+        }
+      }
+    });
+
+    function _ntAgo(iso) {
+      if (!iso) return '';
+      const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+      if (m < 1)  return 'just now';
+      if (m < 60) return m + 'm ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + 'h ago';
+      return Math.floor(h / 24) + 'd ago';
+    }
+
+    function _esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function loadNotifDropdown() {
+      const list = document.getElementById('notifList');
+      if (!list) return;
+      list.innerHTML = '<div class="notif-loading">Loading…</div>';
+      try {
+        const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+        if (!user) { list.innerHTML = '<div class="notif-empty">Sign in to see notifications</div>'; return; }
+        const isSeller = user.role === 'seller';
+
+        if (typeof MessagesAPI === 'undefined') {
+          list.innerHTML = '<div class="notif-empty">Could not load notifications</div>'; return;
+        }
+
+        const notifs = await MessagesAPI.recentNotifs(8);
+        if (!notifs.length) {
+          list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+          return;
+        }
+
+        list.innerHTML = notifs.map(n => {
+          const shop    = n.shops  || {};
+          const sender  = n.sender || {};
+          const name    = isSeller ? (sender.name || 'Customer') : (shop.name || 'Shop');
+          const emoji   = shop.emoji || '🏪';
+          const preview = n.image_url && !n.text ? '📷 Photo'
+                        : (_esc(n.text || '')).slice(0, 60) + ((n.text || '').length > 60 ? '…' : '');
+          const time    = _ntAgo(n.created_at);
+          const unread  = !n.read;
+          const href    = isSeller
+            ? `seller-dashboard.html?panel=chat&buyer=${encodeURIComponent(n.sender_id)}`
+            : `shop.html?id=${encodeURIComponent(n.shop_id)}&openChat=1`;
+
+          return `<a class="notif-item${unread ? ' unread' : ''}" href="${href}" onclick="closeNotifDropdown()">
+            <div class="notif-item-avatar">${_esc(emoji)}</div>
+            <div class="notif-item-body">
+              <div class="notif-item-title">Message from ${_esc(name)}</div>
+              <div class="notif-item-preview">${preview || 'Sent a message'}</div>
+              <div class="notif-item-time">${time}</div>
+            </div>
+            ${unread ? '<div class="notif-item-dot"></div>' : ''}
+          </a>`;
+        }).join('');
+
+      } catch(e) {
+        const list2 = document.getElementById('notifList');
+        if (list2) list2.innerHTML = '<div class="notif-empty">Could not load notifications</div>';
+      }
+    }
+
+    async function markAllNotifsRead(e) {
+      if (e) e.preventDefault();
+      try {
+        const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+        if (!user || typeof sb === 'undefined') return;
+        await sb.from('messages').update({ read: true }).eq('receiver_id', user.id).eq('read', false);
+        if (typeof refreshBadges === 'function') refreshBadges();
+        loadNotifDropdown();
+      } catch(_) {}
+    }
+
+    function viewAllNotifs(e) {
+      if (e) e.preventDefault();
+      closeNotifDropdown();
+      try {
+        const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+        window.location.href = (!user)                   ? 'project.html'
+                             : user.role === 'seller'    ? 'seller-dashboard.html?panel=chat'
+                             : 'profile.html';
+      } catch(_) { window.location.href = 'project.html'; }
+    }
+
+    /* -- Auth-aware nav button -- */
+    (function updateAuthNav() {
+      try {
+        const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+        const wrap = document.getElementById('nav-auth-wrap');
+        if (user && user.role === 'admin') {
+          const adminLink = document.getElementById('admin-link');
+          if (adminLink) adminLink.style.display = '';
+        }
+        if (user && user.name) {
+          const initials = user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+          wrap.innerHTML = `
+            <button onclick="window.location.href='profile.html'" class="signin-button"
+              style="display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;
+                width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.3);
+                font-size:11px;font-weight:700;">${initials}</span>
+              <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.name.split(' ')[0]}</span>
+            </button>`;
+        }
+      } catch (_) {}
+    })();
+
+    if (typeof refreshBadges === 'function') refreshBadges();
+
+    /* -- Sign-in prompt -- */
+    let _signinRedirect = '';
+    function showSigninPrompt(msg) {
+      _signinRedirect = window.location.href;
+      const el = document.getElementById('signin-prompt');
+      if (!el) return;
+      document.getElementById('signin-prompt-msg').textContent = msg || 'Sign in to continue';
+      el.style.display = 'flex';
+    }
+    function dismissSigninPrompt() {
+      const el = document.getElementById('signin-prompt');
+      if (el) el.style.display = 'none';
+    }
+    function goToSignin() {
+      dismissSigninPrompt();
+      window.location.href = `project.html?redirect=${encodeURIComponent(_signinRedirect)}`;
+    }
+    document.getElementById('signin-prompt').addEventListener('click', function(e) {
+      if (e.target === this) dismissSigninPrompt();
+    });
+  </script>
+</body>
+</html>

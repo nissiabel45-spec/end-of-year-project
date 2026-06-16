@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Website</title>
+  <link rel="stylesheet" href="assets/edit.css">
+</head>
+
+<body>
+
+  <!-- -- HEADER (loaded from header.html) -- -->
+  <div id="header-placeholder"></div>
+
+  <!-- ======================================
+       HOME PAGE CONTENT
+  ====================================== -->
+  <main class="page-content">
+
+    <!-- -- HERO SLIDESHOW -- -->
+    <div class="slideshow" id="slideshow">
+
+      <div class="slide active" data-slide="0">
+        <div class="slide-bg"><span class="slide-emoji"></span></div>
+        <div class="slide-content">
+          <div class="slide-badge">New Arrivals</div>
+          <h2>Summer Collection 2026</h2>
+          <p>Discover the latest trends in fashion and lifestyle curated just for you.</p>
+          <a href="search and browse.html" class="slide-btn">Shop Now</a>
+        </div>
+      </div>
+
+      <div class="slide" data-slide="1">
+        <div class="slide-bg"><span class="slide-emoji"></span></div>
+        <div class="slide-content">
+          <div class="slide-badge">Flash Sale</div>
+          <h2>Up to 60% Off Electronics</h2>
+          <p>Top brands, unbeatable prices. Limited stock - grab yours today.</p>
+          <a href="search and browse.html" class="slide-btn">View Deals</a>
+        </div>
+      </div>
+
+      <div class="slide" data-slide="2">
+        <div class="slide-bg"><span class="slide-emoji"></span></div>
+        <div class="slide-content">
+          <div class="slide-badge">Featured</div>
+          <h2>Refresh Your Home</h2>
+          <p>Stylish furniture and decor to transform every room in your house.</p>
+          <a href="search and browse.html" class="slide-btn">Explore</a>
+        </div>
+      </div>
+
+      <div class="slide" data-slide="3">
+        <div class="slide-bg"><span class="slide-emoji"></span></div>
+        <div class="slide-content">
+          <div class="slide-badge">Trending</div>
+          <h2>Sports and Outdoor Gear</h2>
+          <p>Level up your game with premium equipment from top-rated shops.</p>
+          <a href="search and browse.html" class="slide-btn">Get Active</a>
+        </div>
+      </div>
+
+      <button class="slide-arrow prev" id="slidePrev">&#8249;</button>
+      <button class="slide-arrow next" id="slideNext">&#8250;</button>
+      <div class="slide-dots" id="slideDots"></div>
+    </div>
+
+    <!-- -- PROMO BANNER -- -->
+    <div class="promo-banner" id="promo-banner">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div id="promo-emoji" style="font-size:2rem;flex-shrink:0;"></div>
+        <div>
+          <div id="promo-label" style="font-size:11px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;opacity:0.8;margin-bottom:4px;"></div>
+          <h4 id="promo-title" style="margin:0 0 4px;">Featured Shop</h4>
+          <p id="promo-desc" style="margin:0;"></p>
+        </div>
+      </div>
+      <button class="promo-btn" id="promo-btn" onclick="goToPromoShop()">Learn More</button>
+    </div>
+
+    <!-- -- FEATURED SHOPS -- -->
+    <div class="section-title">
+      <h3>Featured Shops</h3>
+      <a href="search and browse.html">View all -></a>
+    </div>
+
+    <div class="shops-grid" id="shops-grid"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    // -- SHOP RENDERING --
+    const catBg = {
+      "Food & Drinks":      "linear-gradient(135deg,#fef3c7,#fde68a)",
+      "Fashion & Clothing": "linear-gradient(135deg,#fce7f3,#fbcfe8)",
+      "Electronics":        "linear-gradient(135deg,#ede9fe,#ddd6fe)",
+      "Crafts & Art":       "linear-gradient(135deg,#e0f2fe,#bbf7d0)",
+      "Services":           "linear-gradient(135deg,#eff6ff,#bfdbfe)",
+      "Agriculture":        "linear-gradient(135deg,#ecfdf5,#a7f3d0)",
+      "Beauty & Health":    "linear-gradient(135deg,#fff1f2,#fecdd3)",
+      "Home & Garden":      "linear-gradient(135deg,#fef9c3,#fef08a)"
+    };
+
+    const verifiedSVG = `<svg style="display:inline;vertical-align:-2px;margin-left:3px" xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="2.5"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>`;
+
+
+    // -- SLIDESHOW DYNAMIC CONTENT --
+    async function initSlides() {
+      let shops = [];
+      try { shops = await ShopsAPI.list(); } catch { return; }
+      if (!shops.length) return;
+
+      // Fisher-Yates shuffle
+      for (let i = shops.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shops[i], shops[j]] = [shops[j], shops[i]];
+      }
+
+      const slideEls = document.querySelectorAll('.slide');
+      const pool = shops.slice(0, slideEls.length);
+
+      for (let i = 0; i < pool.length; i++) {
+        const shop = pool[i];
+        let products = [];
+        try { products = await ShopsAPI.products(shop.id); } catch {}
+        if (!products.length) continue;
+
+        const product = products[Math.floor(Math.random() * products.length)];
+        const slide = slideEls[i];
+
+        // Background: product photo if available, else gradient + emoji
+        const slideBg = slide.querySelector('.slide-bg');
+        const emojiEl = slide.querySelector('.slide-emoji');
+        if (product.image_url && slideBg) {
+          slideBg.style.background = `linear-gradient(rgba(0,0,0,0.38),rgba(0,0,0,0.38)), url('${product.image_url}') center/cover no-repeat`;
+          if (emojiEl) emojiEl.style.display = 'none';
+        } else {
+          if (emojiEl) emojiEl.textContent = product.emoji || shop.emoji || '';
+        }
+
+        const badge = slide.querySelector('.slide-badge');
+        if (badge) badge.textContent = shop.cat || 'Featured';
+
+        const h2 = slide.querySelector('h2');
+        if (h2) h2.textContent = product.name;
+
+        const p = slide.querySelector('p');
+        if (p) {
+          const price = product.price ? product.price.toLocaleString() + ' FCFA' : '';
+          p.textContent = 'From ' + shop.name + (price ? ' - ' + price : '');
+        }
+      }
+    }
+
+    let promoShopId = null;
+
+    function goToPromoShop() {
+      if (promoShopId) window.location.href = 'shop.html?id=' + promoShopId;
+    }
+
+    function initPromoBanner(shops) {
+      if (!shops.length) return;
+      const pool = shops.filter(s => s.verified).length ? shops.filter(s => s.verified) : shops;
+      const shop = pool[Math.floor(Math.random() * pool.length)];
+      promoShopId = shop.id;
+
+      document.getElementById('promo-emoji').textContent  = shop.emoji ;
+      document.getElementById('promo-label').textContent  = shop.cat || 'Featured Shop';
+      document.getElementById('promo-title').textContent  = shop.name;
+      document.getElementById('promo-desc').textContent   =
+        shop.description || ('Explore our selection from ' + (shop.loc || 'Cameroon'));
+    }
+
+    async function loadHomeData() {
+      let shops = [];
+      try { shops = await ShopsAPI.list(); } catch { shops = []; }
+      initPromoBanner(shops);
+      renderHomeShopsFromList(shops);
+    }
+
+    function renderHomeShopsFromList(shops) {
+      const grid = document.getElementById('shops-grid');
+      if (!shops.length) {
+        grid.innerHTML = `
+          <div class="empty-shops-home">
+            <span class="empty-shops-icon"></span>
+            <h3>No shops registered yet</h3>
+            <p>Be the first to open a shop on ShopSwift and reach customers across Cameroon.</p>
+            <a href="register.html" class="slide-btn" style="display:inline-block;text-decoration:none;">Open Your Shop -></a>
+          </div>`;
+        return;
+      }
+      grid.innerHTML = shops.slice(0, 8).map(s => `
+        <div class="shop-card">
+          <div class="shop-banner" style="background:${catBg[s.cat] || 'linear-gradient(135deg,#e0f2fe,#bfdbfe)'}">
+            <span style="font-size:32px;">${s.emoji || ''}</span>
+            <div class="shop-avatar">${s.emoji || ''}</div>
+          </div>
+          <div class="shop-info">
+            <p class="shop-name">${s.name}${s.verified ? verifiedSVG : ''}</p>
+            <p class="shop-category">${s.cat}</p>
+            <div class="shop-meta">
+              <div class="shop-rating">${s.rating > 0 ? `&#9733; ${Number(s.rating).toFixed(1)}` : '<span style="color:#9ca3af;font-size:11px;">No ratings yet</span>'}</div>
+              <span> ${s.loc}</span>
+            </div>
+          </div>
+          <button class="shop-visit-btn"
+            onclick="window.location.href='shop.html?id=${s.id}'">Visit Shop</button>
+        </div>`).join('');
+    }
+
+    initSlides();
+    loadHomeData();
+
+    // -- LOAD HEADER --
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html));
+      })
+      .catch(() => console.warn('header.html could not be loaded.'));
+
+    // -- SLIDESHOW --
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('slideDots');
+    let current = 0, timer;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    });
+
+    function goTo(n) {
+      slides[current].classList.remove('active');
+      dotsContainer.children[current].classList.remove('active');
+      current = (n + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      dotsContainer.children[current].classList.add('active');
+      resetTimer();
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => goTo(current + 1), 5000);
+    }
+
+    document.getElementById('slideNext').addEventListener('click', () => goTo(current + 1));
+    document.getElementById('slidePrev').addEventListener('click', () => goTo(current - 1));
+    resetTimer();
+  </script>
+</body>
+</html>
+

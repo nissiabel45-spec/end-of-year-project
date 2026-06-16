@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body class="checkout-page">
+
+  <div id="header-placeholder"></div>
+
+  <div style="max-width:1100px;margin:0 auto;padding:1.5rem 2rem 0;">
+    <h1 style="font-size:22px;font-weight:700;color:#1c1c1c;margin:0 0 4px;">Checkout</h1>
+    <p style="font-size:14px;color:#6b7280;margin:0;">
+      <a href="cart.html" style="color:#2563eb;text-decoration:none;"><i class="ti ti-arrow-left"></i> Back to cart</a>
+    </p>
+  </div>
+
+  <div class="checkout-layout">
+
+    <!-- LEFT: Forms -->
+    <div>
+
+      <!-- Delivery Address -->
+      <div class="checkout-section">
+        <h3>
+          <span class="step-num">1</span>
+          Delivery Address
+        </h3>
+        <div class="co-form-grid">
+          <div class="co-form-group">
+            <label class="co-label">First name</label>
+            <input class="co-input" type="text" placeholder="e.g. Jean-Marie" id="co-fname">
+          </div>
+          <div class="co-form-group">
+            <label class="co-label">Last name</label>
+            <input class="co-input" type="text" placeholder="e.g. Mballa" id="co-lname">
+          </div>
+          <div class="co-form-group">
+            <label class="co-label">Phone number</label>
+            <input class="co-input" type="tel" placeholder="670 000 000" id="co-phone">
+          </div>
+          <div class="co-form-group">
+            <label class="co-label">City / Town</label>
+            <select class="co-select" id="co-city" onchange="updateDelivery()">
+              <option value="">Select city</option>
+              <option>Buea</option>
+              <option>Douala</option>
+              <option>Yaoundé</option>
+              <option>Bafoussam</option>
+              <option>Bamenda</option>
+              <option>Limbe</option>
+              <option>Ngaoundéré</option>
+              <option>Maroua</option>
+              <option>Garoua</option>
+              <option>Kribi</option>
+              <option>Kumba</option>
+              <option>Ebolowa</option>
+            </select>
+          </div>
+          <div class="co-form-group full">
+            <label class="co-label">Street address / Neighbourhood</label>
+            <input class="co-input" type="text" placeholder="e.g. Molyko, opposite Total Station" id="co-address">
+          </div>
+          <div class="co-form-group full">
+            <label class="co-label">Delivery instructions (optional)</label>
+            <input class="co-input" type="text" placeholder="e.g. Call when you arrive" id="co-notes">
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-section">
+        <h3>
+          <span class="step-num">2</span>
+          Payment Method
+        </h3>
+        <div class="payment-options">
+
+          <!-- MTN MoMo -->
+          <div class="payment-option selected" id="pay-mtn" onclick="selectPayment('mtn')">
+            <div class="payment-option-header">
+              <input type="radio" name="payment" value="mtn" checked>
+              <span class="payment-icon"></span>
+              <span class="payment-label">MTN Mobile Money</span>
+              <span class="payment-sub">MTN MoMo</span>
+            </div>
+            <div class="payment-detail">
+              <p style="font-size:13px;color:#6b7280;margin:0 0 10px;">Enter your MTN MoMo number to receive a payment request.</p>
+              <div class="momo-input-row">
+                <span class="momo-prefix">+237</span>
+                <input class="co-input" type="tel" placeholder="6XX XXX XXX" id="mtn-number" style="flex:1;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Orange Money -->
+          <div class="payment-option" id="pay-orange" onclick="selectPayment('orange')">
+            <div class="payment-option-header">
+              <input type="radio" name="payment" value="orange">
+              <span class="payment-icon"></span>
+              <span class="payment-label">Orange Money</span>
+              <span class="payment-sub">OM</span>
+            </div>
+            <div class="payment-detail">
+              <p style="font-size:13px;color:#6b7280;margin:0 0 10px;">Enter your Orange Money number to receive a payment request.</p>
+              <div class="momo-input-row">
+                <span class="momo-prefix">+237</span>
+                <input class="co-input" type="tel" placeholder="6XX XXX XXX" id="orange-number" style="flex:1;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Cash on Delivery -->
+          <div class="payment-option" id="pay-cod" onclick="selectPayment('cod')">
+            <div class="payment-option-header">
+              <input type="radio" name="payment" value="cod">
+              <span class="payment-icon"></span>
+              <span class="payment-label">Cash on Delivery</span>
+              <span class="payment-sub">Pay when delivered</span>
+            </div>
+            <div class="payment-detail">
+              <p style="font-size:13px;color:#6b7280;margin:0;">Have the exact amount ready when your order arrives. Available in selected cities only.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div>
+      <div class="co-order-summary">
+        <h3>Your Order</h3>
+        <div id="co-items-list">
+          <p style="color:#9ca3af;font-size:13px;text-align:center;">Loading...</p>
+        </div>
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:12px;margin-top:4px;">
+          <div class="summary-row" style="font-size:14px;color:#374151;margin-bottom:8px;display:flex;justify-content:space-between;">
+            <span>Subtotal</span><span id="co-subtotal">FCFA 0</span>
+          </div>
+          <div class="summary-row" style="font-size:14px;color:#374151;margin-bottom:8px;display:flex;justify-content:space-between;">
+            <span>Delivery</span><span id="co-delivery">FCFA 0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#1c1c1c;padding-top:8px;border-top:1px solid #e5e7eb;">
+            <span>Total</span>
+            <span id="co-total" style="color:#2563eb;">FCFA 0</span>
+          </div>
+        </div>
+
+        <button class="place-order-btn" onclick="placeOrder()" id="place-btn">
+          Place Order
+        </button>
+        <div class="secure-note">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Secured by ShopSwift
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS MODAL -->
+  <div id="order-success-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:20px;padding:3rem 2rem;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+      <div style="margin-bottom:16px;"><i class="ti ti-confetti" style="font-size:64px;color:#2563eb;display:block;text-align:center;"></i></div>
+      <h2 style="font-size:22px;font-weight:800;color:#1c1c1c;margin:0 0 10px;">Order Placed!</h2>
+      <p style="font-size:15px;color:#6b7280;margin:0 0 24px;line-height:1.6;">Your order has been placed successfully. You'll receive a confirmation on your phone shortly.</p>
+      <div style="background:#f0f9f4;border-radius:10px;padding:14px;margin-bottom:24px;">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">Order Reference</div>
+        <div style="font-size:20px;font-weight:800;color:#2563eb;letter-spacing:2px;" id="order-ref">CMK-000000</div>
+      </div>
+      <button onclick="goToTracking()" style="width:100%;padding:14px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;"><i class="ti ti-arrow-right"></i> Track My Order</button>
+      <a href="home.html" style="display:block;font-size:14px;color:#7494ec;text-decoration:none;">Continue Shopping</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    (function() {
+      const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+      if (!user) { window.location.href = 'project.html'; return; }
+    })();
+
+    const DELIVERY_FEE = 2000;
+    const FREE_THRESHOLD = 20000;
+    const cityFees = {
+      Buea: 1500, Limbe: 1500, Douala: 2000, 'Yaoundé': 2500,
+      Bafoussam: 3000, Bamenda: 3500, Kribi: 3000, Kumba: 2500,
+      'Ngaoundéré': 5000, Maroua: 6000, Garoua: 5500, Ebolowa: 3500
+    };
+    let selectedPayment = 'mtn';
+    let cartItems = [];
+
+    async function init() {
+      try {
+        cartItems = await CartAPI.get();
+      } catch (err) {
+        cartItems = [];
+      }
+
+      if (cartItems.length === 0) {
+        window.location.href = 'cart.html';
+        return;
+      }
+
+      const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+
+      document.getElementById('co-items-list').innerHTML = cartItems.map(item => `
+        <div class="co-order-item">
+          <div class="co-item-img" style="display:flex;align-items:center;justify-content:center;">
+            ${item.image_url
+              ? `<img src="${item.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" alt="${item.name}">`
+              : `<i class="ti ti-${item.icon || 'package'}" style="font-size:1.5rem;color:#9ca3af;"></i>`}
+          </div>
+          <div class="co-item-info">
+            <div class="co-item-name">${item.name}</div>
+            <div class="co-item-qty">Qty: ${item.qty}</div>
+          </div>
+          <div class="co-item-price">FCFA ${(item.price * item.qty).toLocaleString()}</div>
+        </div>
+      `).join('');
+
+      updateSummary(subtotal);
+    }
+
+    function updateDelivery() {
+      const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+      updateSummary(subtotal, document.getElementById('co-city').value);
+    }
+
+    function updateSummary(subtotal, city) {
+      let fee = city ? (cityFees[city] || DELIVERY_FEE) : DELIVERY_FEE;
+      if (subtotal >= FREE_THRESHOLD) fee = 0;
+      const total = subtotal + fee;
+      document.getElementById('co-subtotal').textContent = `FCFA ${subtotal.toLocaleString()}`;
+      document.getElementById('co-delivery').textContent = fee === 0 ? 'FREE' : `FCFA ${fee.toLocaleString()}`;
+      document.getElementById('co-total').textContent = `FCFA ${total.toLocaleString()}`;
+    }
+
+    function selectPayment(method) {
+      selectedPayment = method;
+      document.querySelectorAll('.payment-option').forEach(el => {
+        el.classList.remove('selected');
+        el.querySelector('input[type="radio"]').checked = false;
+      });
+      const el = document.getElementById('pay-' + method);
+      el.classList.add('selected');
+      el.querySelector('input[type="radio"]').checked = true;
+    }
+
+    async function placeOrder() {
+      const fname = document.getElementById('co-fname').value.trim();
+      const lname = document.getElementById('co-lname').value.trim();
+      const phone = document.getElementById('co-phone').value.trim();
+      const city  = document.getElementById('co-city').value;
+      const addr  = document.getElementById('co-address').value.trim();
+
+      if (!fname || !lname || !phone || !city || !addr) {
+        alert('Please fill in all required delivery fields.');
+        return;
+      }
+      if (selectedPayment === 'mtn') {
+        const num = document.getElementById('mtn-number').value.trim();
+        if (!num) { alert('Please enter your MTN MoMo number.'); return; }
+      }
+      if (selectedPayment === 'orange') {
+        const num = document.getElementById('orange-number').value.trim();
+        if (!num) { alert('Please enter your Orange Money number.'); return; }
+      }
+
+      const btn = document.getElementById('place-btn');
+      btn.disabled = true;
+      btn.textContent = 'Placing order...';
+
+      let fee = cityFees[city] || DELIVERY_FEE;
+      const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+      if (subtotal >= FREE_THRESHOLD) fee = 0;
+      const total = subtotal + fee;
+
+      const items = cartItems.map(i => ({
+        id:       i.id,
+        name:     i.name,
+        price:    i.price,
+        qty:      i.qty,
+        shop_id:  i.shopId,
+        shop_name: i.shopName
+      }));
+
+      try {
+        const result = await OrdersAPI.create({
+          items,
+          total,
+          delivery_city:    city,
+          delivery_address: `${fname} ${lname}, ${addr}, ${phone}`,
+          payment_method:   selectedPayment
+        });
+
+        /* result = { id: <uuid>, ref: 'CMK-XXXXXXXX' } */
+        localStorage.setItem('cammarket_last_order',    result.ref || result.id);
+        localStorage.setItem('cammarket_last_order_id', result.id);
+
+        document.getElementById('order-ref').textContent = result.ref || result.id;
+        document.getElementById('order-success-overlay').style.display = 'flex';
+      } catch (err) {
+        alert(err.message || 'Could not place order. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
+    }
+
+    function goToTracking() {
+      window.location.href = 'order-tracking.html';
+    }
+
+    init();
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => { const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html)); })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <style>
+    /* gradient background only — layout rules live in edit.css */
+    body.auth-page {
+      background: linear-gradient(to right, #e2e2e2, #c9d6ff);
+      min-height: 100vh;
+      color: #333;
+    }
+  </style>
+</head>
+<body class="auth-page">
+
+  <!-- FULL HEADER (both rows, same as home page) -->
+  <div id="header-placeholder"></div>
+
+  <!-- CENTERED FORM CARD -->
+  <div class="auth-wrap">
+    <div class="container">
+
+      <!-- LOGIN FORM -->
+      <div class="form-box active" id="login-form">
+        <h2>Welcome Back</h2>
+        <p style="text-align:center;color:#6b7280;font-size:14px;margin-bottom:20px;">Sign in to your ShopSwift account.</p>
+        <form onsubmit="handleLogin(event)">
+          <input type="email"    id="li-email" placeholder="Email address" required>
+          <input type="password" id="li-pass"  placeholder="Password"      required>
+          <div id="login-error" style="color:#c0392b;font-size:13px;margin-bottom:8px;display:none;text-align:center;"></div>
+          <button type="submit">Sign in</button>
+          <p><a href="#" style="color:#7494ec;font-size:13px;">Forgot password?</a></p>
+          <p>Don't have an account? <a href="#" onclick="showForm('register-form')">Register</a></p>
+          <p>Want to sell? <a href="register.html" style="color:#2563eb;">Create a seller account &rarr;</a></p>
+        </form>
+      </div>
+
+      <!-- QUICK REGISTER FORM -->
+      <div class="form-box" id="register-form">
+        <h2>Create Account</h2>
+        <p style="text-align:center;color:#6b7280;font-size:14px;margin-bottom:20px;">Join ShopSwift as a buyer.</p>
+        <form onsubmit="handleQuickReg(event)">
+          <input type="text"     id="qr-name"  placeholder="Full name"        required>
+          <input type="email"    id="qr-email" placeholder="Email address"    required>
+          <input type="tel"      id="qr-phone" placeholder="Phone number"     required>
+          <input type="password" id="qr-pass"  placeholder="Create a password" required>
+          <div id="qreg-error" style="color:#c0392b;font-size:13px;margin-bottom:8px;display:none;text-align:center;"></div>
+          <button type="submit">Create Account</button>
+          <p>Already have an account? <a href="#" onclick="showForm(‘login-form’)">Sign in</a></p>
+          <p>Want to sell? <a href="register.html" style="color:#2563eb;">Register as a seller &rarr;</a></p>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    function showForm(id) {
+      document.querySelectorAll('.form-box').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    /* Show session-expired banner if redirected from create-shop */
+    (function() {
+      const msg = new URLSearchParams(window.location.search).get('msg');
+      if (msg === 'session_expired') {
+        const el = document.getElementById('login-error');
+        el.textContent = 'Your session expired. Please sign in again to continue.';
+        el.style.display = 'block';
+      }
+    })();
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email  = document.getElementById('li-email').value.trim();
+      const pass   = document.getElementById('li-pass').value;
+      const btn    = e.target.querySelector('button');
+      const errEl  = document.getElementById('login-error');
+
+      btn.textContent = 'Signing in...'; btn.disabled = true;
+      errEl.style.display = 'none';
+
+      try {
+        const user = await AuthAPI.login({ email, password: pass });
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect');
+        if (redirect) { window.location.href = decodeURIComponent(redirect); return; }
+        if (user.role === 'admin') {
+          window.location.href = 'admin.html';
+        } else if (user.role === 'seller') {
+          const hasShop = !!localStorage.getItem('cammarket_active_shop');
+          window.location.href = hasShop ? 'seller-dashboard.html' : 'create-shop.html';
+        } else {
+          window.location.href = 'home.html';
+        }
+      } catch (err) {
+        let msg = err.message || '';
+        if (!msg || msg.toLowerCase().includes('invalid login credentials')) {
+          msg = 'Incorrect email or password. If you just registered, check your email inbox for a confirmation link first.';
+        } else if (msg.toLowerCase().includes('not confirmed') || msg.toLowerCase().includes('email')) {
+          msg = 'Please confirm your email address before signing in. Check your inbox for the confirmation link.';
+        }
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+        btn.textContent = 'Sign in'; btn.disabled = false;
+      }
+    }
+
+    async function handleQuickReg(e) {
+      e.preventDefault();
+      const btn   = e.target.querySelector('button');
+      const errEl = document.getElementById('qreg-error');
+
+      btn.textContent = 'Creating account...'; btn.disabled = true;
+      errEl.style.display = 'none';
+
+      try {
+        const result = await AuthAPI.register({
+          name:     document.getElementById('qr-name').value.trim(),
+          email:    document.getElementById('qr-email').value.trim(),
+          phone:    document.getElementById('qr-phone').value.trim(),
+          password: document.getElementById('qr-pass').value,
+          role:     'buyer'
+        });
+        if (result && result.needsConfirmation) {
+          errEl.style.color = '#059669';
+          errEl.textContent = 'Account created! Check your email inbox and click the confirmation link, then sign in here.';
+          errEl.style.display = 'block';
+          btn.textContent = 'Check Your Email'; btn.disabled = true;
+          return;
+        }
+        window.location.href = 'home.html';
+      } catch (err) {
+        errEl.style.color = '#c0392b';
+        errEl.textContent = err.message || 'Registration failed.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Create Account'; btn.disabled = false;
+      }
+    }
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html));
+        /* No secondHeader hiding — full header shows on this page */
+      })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>
+
+

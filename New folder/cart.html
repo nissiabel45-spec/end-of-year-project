@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart — ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body class="cart-page">
+
+  <div id="header-placeholder"></div>
+
+  <div style="max-width:1100px;margin:0 auto;padding:1.5rem 2rem 0;">
+    <h1 style="font-size:22px;font-weight:700;color:#1c1c1c;margin:0 0 4px;">Shopping Cart</h1>
+    <p style="font-size:14px;color:#6b7280;margin:0;">Review your items before checking out.</p>
+  </div>
+
+  <div class="cart-layout">
+
+    <!-- LEFT: Cart Items -->
+    <div>
+      <div class="cart-main-panel">
+        <div class="cart-panel-header">
+          <h2 id="cart-heading">Your Items</h2>
+          <button class="cart-clear-btn" onclick="clearCart()">Remove all</button>
+        </div>
+        <div id="cart-items-container">
+          <div style="text-align:center;padding:40px;color:#9ca3af;">Loading cart...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Summary -->
+    <div>
+      <div class="cart-summary-panel">
+        <h3>Order Summary</h3>
+
+        <div class="summary-row">
+          <span id="summary-items-label">Items (0)</span>
+          <span id="summary-subtotal">FCFA 0</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery fee</span>
+          <span id="summary-delivery">FCFA 0</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="summary-total">FCFA 0</span>
+        </div>
+
+        <a href="checkout.html" class="checkout-btn" id="checkout-btn">Proceed to Checkout</a>
+        <a href="search and browse.html" class="continue-shopping"><i class="ti ti-arrow-left"></i> Continue Shopping</a>
+
+        <div class="delivery-note">
+          Delivery fees are calculated based on your location at checkout.
+          Free delivery on orders over FCFA 20,000.
+        </div>
+      </div>
+
+      <!-- Accepted Payments -->
+      <div style="background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,0.07);padding:1.25rem;margin-top:1rem;">
+        <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">We Accept</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="padding:6px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:600;color:#374151;">MTN MoMo</div>
+          <div style="padding:6px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:600;color:#374151;">Orange Money</div>
+          <div style="padding:6px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:600;color:#374151;">Cash on Delivery</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    (function() {
+      const user = JSON.parse(localStorage.getItem('cammarket_user') || 'null');
+      if (!user) { window.location.href = 'project.html'; }
+    })();
+
+    const DELIVERY_THRESHOLD = 20000;
+    const DELIVERY_FEE = 2000;
+
+    function itemImgHTML(item) {
+      if (item.image_url) {
+        return `<img src="${item.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;" alt="${item.name}">`;
+      }
+      return `<i class="ti ti-${item.icon || 'package'}" style="font-size:1.8rem;color:#9ca3af;"></i>`;
+    }
+
+    async function renderCart() {
+      const container  = document.getElementById('cart-items-container');
+      const checkoutBtn = document.getElementById('checkout-btn');
+
+      let cart = [];
+      try { cart = await CartAPI.get(); }
+      catch (err) {
+        container.innerHTML = `<div class="cart-empty"><h3>Could not load cart</h3><p>${err.message}</p></div>`;
+        return;
+      }
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="cart-empty">
+            <div class="cart-empty-icon"><i class="ti ti-shopping-cart" style="font-size:2.5rem;"></i></div>
+            <h3>Your cart is empty</h3>
+            <p>Browse our shops and add items to get started.</p>
+            <a href="search and browse.html" style="display:inline-block;margin-top:16px;padding:12px 28px;background:#2563eb;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">Browse Shops</a>
+          </div>`;
+        document.getElementById('cart-heading').textContent = 'Your Items (0)';
+        checkoutBtn.style.opacity = '0.5';
+        checkoutBtn.style.pointerEvents = 'none';
+        updateSummary(0, 0);
+        return;
+      }
+
+      checkoutBtn.style.opacity = '';
+      checkoutBtn.style.pointerEvents = '';
+      document.getElementById('cart-heading').textContent = `Your Items (${cart.length})`;
+
+      container.innerHTML = cart.map(item => `
+        <div class="cart-item" id="item-${item.id}">
+          <div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            ${itemImgHTML(item)}
+          </div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-shop">
+              <a href="shop.html?id=${item.shopId}" style="color:#2563eb;text-decoration:none;font-weight:500;"><i class="ti ti-building-store"></i> ${item.shopName}</a>
+            </div>
+            <div class="cart-item-price">FCFA ${Number(item.price).toLocaleString()} each</div>
+            <div class="cart-qty">
+              <button onclick="changeQty('${item.id}', ${item.qty - 1})">−</button>
+              <span>${item.qty}</span>
+              <button onclick="changeQty('${item.id}', ${item.qty + 1})">+</button>
+            </div>
+          </div>
+          <div class="cart-item-total">FCFA ${(item.price * item.qty).toLocaleString()}</div>
+          <button class="cart-item-remove" onclick="removeItem('${item.id}')" title="Remove">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      `).join('');
+
+      const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const delivery = subtotal >= DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
+      updateSummary(subtotal, delivery);
+    }
+
+    function updateSummary(subtotal, delivery) {
+      const total    = subtotal + delivery;
+      document.getElementById('summary-items-label').textContent = `Items`;
+      document.getElementById('summary-subtotal').textContent = `FCFA ${subtotal.toLocaleString()}`;
+      document.getElementById('summary-delivery').textContent = delivery === 0 ? 'FREE' : `FCFA ${delivery.toLocaleString()}`;
+      document.getElementById('summary-total').textContent = `FCFA ${total.toLocaleString()}`;
+    }
+
+    async function changeQty(productId, newQty) {
+      if (newQty < 1) { removeItem(productId); return; }
+      try {
+        await CartAPI.update(productId, newQty);
+        renderCart();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function removeItem(productId) {
+      try {
+        await CartAPI.remove(productId);
+        renderCart();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function clearCart() {
+      if (!confirm('Remove all items from your cart?')) return;
+      try {
+        await CartAPI.clear();
+        renderCart();
+      } catch (err) { alert(err.message); }
+    }
+
+    renderCart();
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => { const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html)); })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>

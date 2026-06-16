@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join ShopSwift — Register</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <style>
+    /* gradient background only — layout rules live in edit.css */
+    body.auth-page {
+      background: linear-gradient(to right, #e2e2e2, #c9d6ff);
+      min-height: 100vh;
+      color: #333;
+    }
+  </style>
+</head>
+<body class="auth-page">
+
+  <!-- FULL HEADER (both rows, same as home page) -->
+  <div id="header-placeholder"></div>
+
+  <!-- CENTERED FORM CARD -->
+  <div class="auth-wrap">
+    <div class="container" style="width:100%;max-width:500px;">
+
+      <!-- STEP 1: Choose Role -->
+      <div class="form-box active" id="step1">
+        <h2 style="font-size:26px;margin-bottom:6px;">Join ShopSwift</h2>
+        <p style="text-align:center;color:#6b7280;margin-bottom:24px;font-size:14px;">Create your account to start buying or selling.</p>
+
+        <div class="reg-step-indicator">
+          <div class="reg-step active">
+            <div class="reg-step-circle">1</div>
+            <div class="reg-step-label">Role</div>
+          </div>
+          <div class="reg-step-line"></div>
+          <div class="reg-step">
+            <div class="reg-step-circle">2</div>
+            <div class="reg-step-label">Details</div>
+          </div>
+        </div>
+
+        <p style="font-size:14px;font-weight:600;color:#374151;margin-bottom:14px;">I want to...</p>
+        <div class="role-cards">
+          <div class="role-card" id="role-buyer" onclick="selectRole('buyer')">
+            <div class="role-icon"><i class="ti ti-shopping-bag" style="font-size:2rem;"></i></div>
+            <h3>Buy</h3>
+            <p>Browse shops, order products, and track deliveries.</p>
+          </div>
+          <div class="role-card" id="role-seller" onclick="selectRole('seller')">
+            <div class="role-icon"><i class="ti ti-building-store" style="font-size:2rem;"></i></div>
+            <h3>Sell</h3>
+            <p>Create a shop, list products, and manage orders.</p>
+          </div>
+        </div>
+
+        <button type="button" onclick="goToStep2()" style="margin-top:8px;">Continue â†’</button>
+        <p>Already have an account? <a href="project.html">Sign in</a></p>
+      </div>
+
+      <!-- STEP 2: Fill Details -->
+      <div class="form-box" id="step2">
+        <h2 style="font-size:24px;margin-bottom:6px;" id="step2-title">Create your account</h2>
+        <p style="text-align:center;color:#6b7280;margin-bottom:20px;font-size:14px;" id="step2-sub">Fill in your details to get started.</p>
+
+        <div class="reg-step-indicator">
+          <div class="reg-step done">
+            <div class="reg-step-circle">âœ“</div>
+            <div class="reg-step-label">Role</div>
+          </div>
+          <div class="reg-step-line done"></div>
+          <div class="reg-step active">
+            <div class="reg-step-circle">2</div>
+            <div class="reg-step-label">Details</div>
+          </div>
+        </div>
+
+        <form id="reg-form" onsubmit="handleRegister(event)">
+          <input type="text"  id="f-name"  placeholder="Full name"                     required>
+          <input type="email" id="f-email" placeholder="Email address"                 required>
+          <input type="tel"   id="f-phone" placeholder="Phone number (e.g. 670 000 000)" required>
+
+          <select id="f-city" required style="margin-bottom:20px;">
+            <option value="">Select your city</option>
+            <option>Buea</option><option>Douala</option><option>Yaoundé</option>
+            <option>Bafoussam</option><option>Bamenda</option><option>Limbe</option>
+            <option>Ngaoundéré</option><option>Maroua</option><option>Garoua</option>
+            <option>Kribi</option><option>Kumba</option><option>Ebolowa</option>
+          </select>
+
+          <!-- Seller-only fields -->
+          <div id="seller-fields" style="display:none;">
+            <input type="text" id="f-shop" placeholder="Shop name">
+            <select id="f-shopcat" style="margin-bottom:20px;">
+              <option value="">Shop category</option>
+              <option>Food & Drinks</option><option>Fashion & Clothing</option>
+              <option>Electronics</option><option>Crafts & Art</option>
+              <option>Services</option><option>Agriculture</option>
+              <option>Beauty & Health</option><option>Home & Garden</option>
+            </select>
+            <input type="text" id="f-shopdesc" placeholder="Short shop description">
+          </div>
+
+          <input type="password" id="f-pass" placeholder="Create a password" required
+            oninput="updatePassStrength(this.value)">
+          <div class="pass-strength-wrap" id="passStrengthWrap" style="display:none;">
+            <div class="pass-strength-bar">
+              <div class="pass-strength-fill" id="passStrengthFill"></div>
+            </div>
+            <span class="pass-strength-text" id="passStrengthText">Weak</span>
+          </div>
+          <input type="password" id="f-pass2" placeholder="Confirm password"    required>
+
+          <div id="reg-error" style="color:#c0392b;font-size:13px;margin-bottom:10px;display:none;text-align:center;"></div>
+          <button type="submit" id="reg-btn">Create Account</button>
+        </form>
+
+        <p><a href="#" onclick="goBack()">â† Change role</a></p>
+        <p>Already have an account? <a href="project.html">Sign in</a></p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    function updatePassStrength(val) {
+      const wrap  = document.getElementById('passStrengthWrap');
+      const fill  = document.getElementById('passStrengthFill');
+      const label = document.getElementById('passStrengthText');
+      if (!val) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'flex';
+      let score = 0;
+      if (val.length >= 6)  score++;
+      if (val.length >= 8)  score++;
+      if (val.length >= 12) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const level = score <= 2 ? {cls:'weak',  text:'Weak'}
+                  : score <= 4 ? {cls:'fair',  text:'Fair'}
+                  : score <= 5 ? {cls:'good',  text:'Good'}
+                  :              {cls:'strong', text:'Strong'};
+      fill.className  = 'pass-strength-fill ' + level.cls;
+      label.className = 'pass-strength-text '  + level.cls;
+      label.textContent = level.text;
+    }
+
+    let selectedRole = '';
+
+    function selectRole(role) {
+      selectedRole = role;
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('role-' + role).classList.add('selected');
+    }
+
+    function goToStep2() {
+      if (!selectedRole) { alert('Please select whether you want to buy or sell.'); return; }
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+      const sf = document.getElementById('seller-fields');
+      if (selectedRole === 'seller') {
+        sf.style.display = 'block';
+        document.getElementById('step2-title').textContent = 'Create your seller account';
+        document.getElementById('step2-sub').textContent = 'Tell us about yourself and your shop.';
+      } else {
+        sf.style.display = 'none';
+        document.getElementById('step2-title').textContent = 'Create your account';
+        document.getElementById('step2-sub').textContent = 'Fill in your details to start shopping.';
+      }
+    }
+
+    function goBack() {
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('reg-error');
+      const pass  = document.getElementById('f-pass').value;
+      const pass2 = document.getElementById('f-pass2').value;
+      if (pass !== pass2) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+      if (pass.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+
+      const btn = document.getElementById('reg-btn');
+      btn.textContent = 'Creating account...'; btn.disabled = true;
+
+      try {
+        const result = await AuthAPI.register({
+          name:     document.getElementById('f-name').value.trim(),
+          email:    document.getElementById('f-email').value.trim(),
+          phone:    document.getElementById('f-phone').value.trim(),
+          city:     document.getElementById('f-city').value,
+          role:     selectedRole,
+          password: pass
+        });
+        if (result && result.needsConfirmation) {
+          errEl.style.color = '#059669';
+          errEl.textContent = 'Account created! Check your email inbox and click the confirmation link, then sign in.';
+          errEl.style.display = 'block';
+          btn.textContent = 'Check Your Email'; btn.disabled = true;
+          return;
+        }
+        window.location.href = selectedRole === 'seller' ? 'create-shop.html' : 'home.html';
+      } catch (err) {
+        errEl.style.color = '#c0392b';
+        errEl.textContent = err.message || 'Registration failed. Please try again.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Create Account'; btn.disabled = false;
+      }
+    }
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html));
+        /* No secondHeader hiding — full header shows on this page */
+      })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,412 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+  <style>
+    .seller-stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:20px; }
+    .seller-stat { border-radius:10px; padding:14px; text-align:center; }
+    .seller-stat .stat-num { font-size:22px; font-weight:700; }
+    .seller-stat .stat-lbl { font-size:12px; color:#6b7280; margin-top:2px; }
+    .shop-hero-row { display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; margin-bottom:20px; }
+    .shop-logo-box { width:80px; height:80px; object-fit:cover; border-radius:12px; }
+    .shop-logo-emoji { width:80px; height:80px; background:#e0f2fe; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:36px; }
+    .shop-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    .btn-dash { padding:10px 20px; background:#2563eb; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px; }
+    .btn-view-shop { padding:10px 20px; background:#f3f4f6; color:#374151; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px; }
+    .review-item { padding:14px 0; border-bottom:1px solid #f3f4f6; }
+    .review-item:last-child { border-bottom:none; }
+    .review-shop-link { font-weight:600; color:#2563eb; text-decoration:none; }
+    .review-stars { color:#f59e0b; font-size:15px; }
+    .review-text { margin:4px 0 0; font-size:14px; color:#374151; }
+    .review-date { margin:4px 0 0; font-size:12px; color:#9ca3af; }
+  </style>
+</head>
+<body class="profile-page">
+
+  <div id="header-placeholder"></div>
+
+  <div class="profile-wrap">
+
+    <!-- PROFILE HERO -->
+    <div class="profile-hero">
+      <div class="profile-avatar-circle" id="avatarCircle">??</div>
+      <div class="profile-hero-info">
+        <h1 class="profile-hero-name" id="heroName">Loading...</h1>
+        <p class="profile-hero-meta" id="heroEmail"></p>
+        <p class="profile-hero-meta" id="heroCity"></p>
+        <span class="profile-hero-badge" id="heroBadge"></span>
+      </div>
+      <div class="profile-hero-actions">
+        <button class="btn-edit-profile" onclick="showTab('settings')">Edit Profile</button>
+        <button class="btn-signout" onclick="signOut()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- TABS (built by JS) -->
+    <div class="profile-tabs" id="tabBar"></div>
+
+    <!-- PANELS (built by JS) -->
+    <div id="panelsContainer"></div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    /* ── Utils ── */
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function showTab(name) {
+      document.querySelectorAll('.profile-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.profile-panel').forEach(function(p) { p.classList.remove('active'); });
+      var t = document.getElementById('tab-' + name);
+      var p = document.getElementById('panel-' + name);
+      if (t) t.classList.add('active');
+      if (p) p.classList.add('active');
+    }
+
+    function buildTabs(tabs) {
+      var html = '';
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        html += '<button class="profile-tab' + (i === 0 ? ' active' : '') + '" '
+              + 'id="tab-' + t.id + '" onclick="showTab(\'' + t.id + '\')">'
+              + t.label;
+        if (t.countId) {
+          html += ' <span class="profile-tab-count" id="' + t.countId + '">0</span>';
+        }
+        html += '</button>';
+      }
+      document.getElementById('tabBar').innerHTML = html;
+    }
+
+    /* ── Init ── */
+    (async function init() {
+      if (!Auth.isLoggedIn()) { window.location.href = 'project.html'; return; }
+      var user = Auth.getUser();
+      try { user = await AuthAPI.me(); Auth.setUser(user); } catch(e) {}
+      renderHero(user);
+      if (user && user.role === 'seller') {
+        buildSellerUI(user);
+      } else {
+        buildBuyerUI(user);
+      }
+    })();
+
+    /* ── Hero ── */
+    function renderHero(user) {
+      if (!user) return;
+      var initials = (user.name || '?').split(' ').map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
+      document.getElementById('avatarCircle').textContent = initials;
+      document.getElementById('heroName').textContent  = user.name  || '';
+      document.getElementById('heroEmail').textContent = user.email || '';
+      document.getElementById('heroCity').innerHTML   = user.city ? '<i class="ti ti-map-pin"></i> ' + esc(user.city) + ', Cameroon' : '';
+      var badge = document.getElementById('heroBadge');
+      if (user.role === 'seller') {
+        badge.innerHTML = '<i class="ti ti-building-store"></i> Seller Account';
+        badge.style.background = '#dbeafe';
+        badge.style.color = '#1d4ed8';
+      } else {
+        badge.innerHTML = '<i class="ti ti-shopping-cart"></i> Buyer Account';
+      }
+    }
+
+    /* ── Settings panel HTML (shared) ── */
+    function settingsPanelHTML(user) {
+      var cities = ['Buea','Doula','Yaounde','Bafoussam','Bamenda','Limbe','Ngaoundere','Maroua','Garoua','Kribi','Kumba','Ebolowa'];
+      var opts = '';
+      for (var i = 0; i < cities.length; i++) {
+        opts += '<option' + (cities[i] === (user.city || '') ? ' selected' : '') + '>' + esc(cities[i]) + '</option>';
+      }
+      return ''
+        + '<div class="profile-panel" id="panel-settings">'
+        +   '<div class="profile-card">'
+        +     '<div class="profile-card-header"><h2 class="profile-card-title">Account Settings</h2></div>'
+        +     '<form id="settingsForm" onsubmit="saveSettings(event)">'
+        +       '<div class="settings-grid">'
+        +         '<p class="settings-section-label">Personal Information</p>'
+        +         '<div class="settings-field"><label class="settings-label">Full Name</label>'
+        +           '<input class="settings-input" type="text" id="s-name" value="' + esc(user.name||'') + '" required></div>'
+        +         '<div class="settings-field"><label class="settings-label">Email Address</label>'
+        +           '<input class="settings-input" type="email" id="s-email" value="' + esc(user.email||'') + '" required></div>'
+        +         '<div class="settings-field"><label class="settings-label">Phone Number</label>'
+        +           '<input class="settings-input" type="tel" id="s-phone" value="' + esc(user.phone||'') + '"></div>'
+        +         '<div class="settings-field"><label class="settings-label">City</label>'
+        +           '<select class="settings-select" id="s-city">' + opts + '</select></div>'
+        +         '<hr class="settings-divider">'
+        +         '<p class="settings-section-label">Change Password</p>'
+        +         '<div class="settings-field"><label class="settings-label">Current Password</label>'
+        +           '<input class="settings-input" type="password" id="s-old-pass" placeholder="Enter current password"></div>'
+        +         '<div class="settings-field"><label class="settings-label">New Password</label>'
+        +           '<input class="settings-input" type="password" id="s-new-pass" placeholder="At least 6 characters"></div>'
+        +         '<div class="settings-field full"><label class="settings-label">Confirm New Password</label>'
+        +           '<input class="settings-input" type="password" id="s-confirm-pass" placeholder="Repeat new password"></div>'
+        +         '<div class="settings-field full" style="margin-top:10px;">'
+        +           '<div id="settings-error" style="color:#c0392b;font-size:13px;margin-bottom:8px;display:none;"></div>'
+        +           '<button type="submit" class="btn-save-settings" id="saveBtn">Save Changes</button>'
+        +         '</div>'
+        +       '</div>'
+        +     '</form>'
+        +   '</div>'
+        +   '<div class="profile-card" style="border:1.5px solid #fee2e2;">'
+        +     '<div class="profile-card-header"><h2 class="profile-card-title" style="color:#c0392b;">Danger Zone</h2></div>'
+        +     '<p style="font-size:14px;color:#6b7280;margin:0 0 1rem;">Deleting your account is permanent and cannot be undone.</p>'
+        +     '<button onclick="confirmDelete()" style="padding:9px 20px;background:#fff;color:#c0392b;border:1.5px solid #c0392b;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">'
+        +       'Delete My Account'
+        +     '</button>'
+        +   '</div>'
+        + '</div>';
+    }
+
+    /* ── Buyer UI ── */
+    function buildBuyerUI(user) {
+      buildTabs([
+        { id:'orders',   label:'My Orders',       countId:'orders-count'  },
+        { id:'reviews',  label:'My Reviews',      countId:'reviews-count' },
+        { id:'settings', label:'Account Settings' }
+      ]);
+      document.getElementById('panelsContainer').innerHTML =
+          '<div class="profile-panel active" id="panel-orders">'
+        +   '<div class="profile-card">'
+        +     '<div class="profile-card-header">'
+        +       '<h2 class="profile-card-title">Order History</h2>'
+        +       '<a href="order-tracking.html" style="font-size:13px;color:#2563eb;text-decoration:none;font-weight:600;">Track latest order &rarr;</a>'
+        +     '</div>'
+        +     '<div id="ordersContent"><p style="padding:2rem;text-align:center;color:#9ca3af;">Loading orders...</p></div>'
+        +   '</div>'
+        + '</div>'
+        + '<div class="profile-panel" id="panel-reviews">'
+        +   '<div class="profile-card">'
+        +     '<div class="profile-card-header"><h2 class="profile-card-title">My Reviews</h2></div>'
+        +     '<div id="reviewsContent"><p style="padding:2rem;text-align:center;color:#9ca3af;">Loading reviews...</p></div>'
+        +   '</div>'
+        + '</div>'
+        + settingsPanelHTML(user);
+
+      loadBuyerOrders();
+      loadBuyerReviews();
+    }
+
+    async function loadBuyerOrders() {
+      var el = document.getElementById('ordersContent');
+      try {
+        var orders = await OrdersAPI.list();
+        if (!orders.length) {
+          el.innerHTML = '<div class="empty-profile"><div class="empty-profile-icon"><i class="ti ti-package" style="font-size:2rem;"></i></div>'
+            + '<p>No orders yet. <a href="search and browse.html" style="color:#2563eb;">Start shopping &rarr;</a></p></div>';
+          return;
+        }
+        document.getElementById('orders-count').textContent = orders.length;
+        var SC = { delivered:'pill-delivered', shipped:'pill-shipped', confirmed:'pill-confirmed', pending:'pill-pending', cancelled:'pill-cancelled' };
+        var SL = { delivered:'Delivered', shipped:'Shipped', confirmed:'Confirmed', pending:'Pending', cancelled:'Cancelled' };
+        var rows = '';
+        for (var i = 0; i < orders.length; i++) {
+          var o = orders[i];
+          var items = o.items;
+          try { if (typeof items === 'string') items = JSON.parse(items); } catch(e) {}
+          var summary = Array.isArray(items)
+            ? items.map(function(it){ return esc(it.name) + (it.qty > 1 ? ' x' + it.qty : ''); }).join(', ')
+            : 'Order items';
+          var dateStr = new Date(o.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+          var ref = 'SSW-' + String(o.id).padStart(6,'0');
+          var st  = o.status || 'pending';
+          rows += '<tr>'
+            + '<td><span class="order-ref">' + ref + '</span></td>'
+            + '<td>' + dateStr + '</td>'
+            + '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + summary + '</td>'
+            + '<td style="font-weight:600;">FCFA ' + Number(o.total).toLocaleString() + '</td>'
+            + '<td><span class="order-status-pill ' + (SC[st]||'pill-pending') + '">' + (SL[st]||st) + '</span></td>'
+            + '<td><button class="btn-track" onclick="window.location.href=\'order-tracking.html\'">Track</button></td>'
+            + '</tr>';
+        }
+        el.innerHTML = '<table class="orders-table">'
+          + '<thead><tr><th>Order Ref</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>'
+          + '<tbody>' + rows + '</tbody></table>';
+      } catch(err) {
+        el.innerHTML = '<div class="empty-profile"><div class="empty-profile-icon"><i class="ti ti-package" style="font-size:2rem;"></i></div>'
+          + '<p>No orders yet. <a href="search and browse.html" style="color:#2563eb;">Start shopping &rarr;</a></p></div>';
+      }
+    }
+
+    async function loadBuyerReviews() {
+      var el = document.getElementById('reviewsContent');
+      try {
+        var reviews = await ReviewsAPI.my();
+        if (!reviews.length) {
+          el.innerHTML = '<div class="empty-profile"><div class="empty-profile-icon"><i class="ti ti-star" style="font-size:2rem;color:#f59e0b;"></i></div>'
+            + '<p>No reviews yet. Visit a shop to leave a review.</p></div>';
+          return;
+        }
+        document.getElementById('reviews-count').textContent = reviews.length;
+        var html = '';
+        for (var i = 0; i < reviews.length; i++) {
+          var r = reviews[i];
+          var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+          html += '<div class="review-item">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">'
+            + '<a href="shop.html?id=' + r.shop_id + '" class="review-shop-link">' + esc(r.shop_name || 'Shop') + '</a>'
+            + '<span class="review-stars">' + stars + '</span></div>'
+            + '<p class="review-text">' + esc(r.text) + '</p>'
+            + '<p class="review-date">' + new Date(r.created_at).toLocaleDateString('en-GB') + '</p>'
+            + '</div>';
+        }
+        el.innerHTML = html;
+      } catch(err) {
+        el.innerHTML = '<div class="empty-profile"><div class="empty-profile-icon"><i class="ti ti-star" style="font-size:2rem;color:#f59e0b;"></i></div>'
+          + '<p>No reviews yet. Visit a shop to leave a review.</p></div>';
+      }
+    }
+
+    /* ── Seller UI ── */
+    function buildSellerUI(user) {
+      buildTabs([
+        { id:'shop',     label:'My Shop'          },
+        { id:'settings', label:'Account Settings' }
+      ]);
+      document.getElementById('panelsContainer').innerHTML =
+          '<div class="profile-panel active" id="panel-shop">'
+        +   '<div id="shopPanelContent"><p style="padding:2rem;text-align:center;color:#9ca3af;">Loading shop...</p></div>'
+        + '</div>'
+        + settingsPanelHTML(user);
+
+      loadSellerShop();
+    }
+
+    async function loadSellerShop() {
+      var el = document.getElementById('shopPanelContent');
+      var user = Auth.getUser();
+      var shop = null;
+      try {
+        shop = await ShopsAPI.getByOwner(user.id);
+      } catch(e) {}
+
+      if (!shop) {
+        el.innerHTML =
+            '<div class="profile-card">'
+          +   '<div class="profile-card-header"><h2 class="profile-card-title">My Shop</h2></div>'
+          +   '<div class="empty-profile">'
+          +     '<div class="empty-profile-icon"><i class="ti ti-building-store" style="font-size:2rem;"></i></div>'
+          +     '<p>You don\'t have a shop yet.</p>'
+          +     '<a href="create-shop.html" style="display:inline-block;margin-top:12px;padding:10px 24px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">'
+          +       'Create Your Shop &rarr;'
+          +     '</a>'
+          +   '</div>'
+          + '</div>';
+        return;
+      }
+
+      /* Cache the shop ID for other pages */
+      localStorage.setItem('cammarket_active_shop', shop.id);
+
+      var logoHTML = shop.logo_url
+        ? '<img src="' + shop.logo_url + '" alt="' + esc(shop.name) + '" class="shop-logo-box">'
+        : '<div class="shop-logo-emoji">' + (shop.emoji || '🏪') + '</div>';
+
+      var products = [];
+      try { products = await ShopsAPI.products(shop.id); } catch(e) {}
+
+      el.innerHTML =
+          '<div class="profile-card">'
+        +   '<div class="profile-card-header">'
+        +     '<h2 class="profile-card-title">My Shop</h2>'
+        +     '<a href="seller-dashboard.html" style="font-size:13px;color:#2563eb;text-decoration:none;font-weight:600;">Go to Dashboard &rarr;</a>'
+        +   '</div>'
+        +   '<div class="shop-hero-row">'
+        +     logoHTML
+        +     '<div style="flex:1;min-width:200px;">'
+        +       '<h3 style="margin:0 0 4px;font-size:20px;">' + esc(shop.name) + '</h3>'
+        +       '<p style="margin:0 0 4px;font-size:13px;color:#6b7280;">' + esc(shop.cat) + ' &middot; ' + esc(shop.loc) + '</p>'
+        +       '<p style="margin:0;font-size:13px;color:#374151;">' + esc(shop.description || '') + '</p>'
+        +     '</div>'
+        +   '</div>'
+        +   '<div class="seller-stat-grid">'
+        +     '<div class="seller-stat" style="background:#f0f9ff;">'
+        +       '<div class="stat-num" style="color:#2563eb;">' + products.length + '</div>'
+        +       '<div class="stat-lbl">Products</div>'
+        +     '</div>'
+        +     '<div class="seller-stat" style="background:#fefce8;">'
+        +       '<div class="stat-num" style="color:#d97706;">' + (shop.rating > 0 ? Number(shop.rating).toFixed(1) : '—') + '</div>'
+        +       '<div class="stat-lbl">Avg Rating</div>'
+        +     '</div>'
+        +     '<div class="seller-stat" style="background:#f0fdf4;">'
+        +       '<div class="stat-num" style="color:#16a34a;">' + (shop.review_count || 0) + '</div>'
+        +       '<div class="stat-lbl">Reviews</div>'
+        +     '</div>'
+        +     '<div class="seller-stat" style="background:#fdf4ff;">'
+        +       '<div class="stat-num" style="color:#9333ea;">' + (shop.verified ? '✓' : '...') + '</div>'
+        +       '<div class="stat-lbl">' + (shop.verified ? 'Verified' : 'Pending') + '</div>'
+        +     '</div>'
+        +   '</div>'
+        +   '<div class="shop-actions">'
+        +     '<a href="seller-dashboard.html" class="btn-dash">Manage Shop</a>'
+        +     '<a href="shop.html?id=' + shop.id + '" class="btn-view-shop">View Public Page</a>'
+        +   '</div>'
+        + '</div>';
+    }
+
+    /* ── Settings save ── */
+    async function saveSettings(e) {
+      e.preventDefault();
+      var errEl = document.getElementById('settings-error');
+      var np = document.getElementById('s-new-pass').value;
+      var cp = document.getElementById('s-confirm-pass').value;
+      if (np && np.length < 6) {
+        errEl.textContent = 'New password must be at least 6 characters.';
+        errEl.style.display = 'block'; return;
+      }
+      if (np && np !== cp) {
+        errEl.textContent = 'New passwords do not match.';
+        errEl.style.display = 'block'; return;
+      }
+      errEl.style.display = 'none';
+      var name  = document.getElementById('s-name').value.trim();
+      var city  = document.getElementById('s-city').value;
+      var phone = document.getElementById('s-phone').value.trim();
+      var btn   = document.getElementById('saveBtn');
+      btn.textContent = 'Saving...'; btn.disabled = true;
+      try {
+        await AuthAPI.updateProfile({ name, phone, city });
+        if (np) await AuthAPI.changePassword(np);
+        var user = Auth.getUser();
+        document.getElementById('heroName').textContent  = name;
+        document.getElementById('heroCity').innerHTML   = city ? '<i class="ti ti-map-pin"></i> ' + city + ', Cameroon' : '';
+        document.getElementById('avatarCircle').textContent =
+          name.split(' ').map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
+        btn.textContent = '✓ Saved!'; btn.classList.add('saved');
+        setTimeout(function() { btn.textContent = 'Save Changes'; btn.classList.remove('saved'); btn.disabled = false; }, 2500);
+      } catch(err) {
+        errEl.textContent = err.message || 'Could not save settings.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Save Changes'; btn.disabled = false;
+      }
+    }
+
+    /* ── Sign out / Delete ── */
+    async function signOut() {
+      if (confirm('Sign out of your ShopSwift account?')) {
+        await Auth.logout();
+        window.location.href = 'project.html';
+      }
+    }
+    function confirmDelete() {
+      if (confirm('Are you sure? This action cannot be undone.')) {
+        Auth.logout();
+        window.location.href = 'project.html';
+      }
+    }
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(function(r){ return r.text(); })
+      .then(function(html){ const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html)); })
+      .catch(function(){});
+  </script>
+</body>
+</html>

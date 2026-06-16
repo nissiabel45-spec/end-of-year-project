@@ -1,0 +1,1511 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Dashboard — ShopSwift</title>
+  <link rel="stylesheet" href="assets/edit.css">
+</head>
+<body class="dash">
+
+  <!-- Full header (both rows) -->
+  <div id="header-placeholder"></div>
+
+  <div class="dash-shell">
+
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         SIDEBAR NAV
+    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <nav class="dash-nav">
+      <div class="dash-nav-shop">
+        <div class="dash-nav-shop-avatar"></div>
+        <div>
+          <div class="dash-nav-shop-name">Loading…</div>
+          <div class="dash-nav-shop-status">Active</div>
+        </div>
+      </div>
+
+      <div class="dash-nav-section">
+        <div class="dash-nav-label">Main</div>
+        <button class="dash-nav-item active" onclick="showPanel('overview', this)">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Overview</span>
+        </button>
+        <button class="dash-nav-item" onclick="showPanel('orders', this)">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+          <span>Orders</span>
+          <span class="dash-nav-badge" id="nav-orders-badge" style="display:none;">0</span>
+        </button>
+        <button class="dash-nav-item" onclick="showPanel('products', this)">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1z"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+          <span>Products</span>
+          <span class="dash-nav-badge green" id="nav-products-badge" style="display:none;">0</span>
+        </button>
+        <button class="dash-nav-item" onclick="showPanel('chat', this)">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>Messages</span>
+          <span class="dash-nav-badge" id="nav-messages-badge" style="display:none;">0</span>
+        </button>
+        <button class="dash-nav-item" onclick="showPanel('settings', this)">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Shop Settings</span>
+        </button>
+      </div>
+
+      <div class="dash-nav-footer">
+        <a href="#" onclick="viewMyShop(event)" class="dash-nav-item" style="text-decoration:none;color:inherit;">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>View My Shop</span>
+        </a>
+        <button class="dash-nav-item" onclick="handleLogout()">
+          <svg class="dash-nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Log out</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         MAIN CONTENT
+    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <main class="dash-main">
+
+      <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+           TAB BAR
+      â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <div class="dash-tabs">
+        <button class="dash-tab active" onclick="showPanel('overview', null, this)">Overview</button>
+        <button class="dash-tab" onclick="showPanel('orders', null, this)">Orders <span class="dash-tab-count" id="tab-orders-count"></span></button>
+        <button class="dash-tab" onclick="showPanel('products', null, this)">Products <span class="dash-tab-count" id="tab-products-count"></span></button>
+        <button class="dash-tab" onclick="showPanel('chat', null, this)">Messages <span class="dash-tab-count" id="tab-messages-count"></span></button>
+        <button class="dash-tab" onclick="showPanel('settings', null, this)">Settings</button>
+      </div>
+
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           OVERVIEW PANEL
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+      <div class="dash-tab-panel active" id="panel-overview">
+        <div class="dash-page-header">
+          <div>
+            <div class="dash-page-title">Overview</div>
+            <div class="dash-page-sub">Welcome back! Here's how your shop is doing.</div>
+          </div>
+          <div class="dash-header-actions">
+            <button class="dash-btn-outline" onclick="showPanel('products')">+ Add Product</button>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="dash-stats-grid">
+          <div class="dash-stat-card green">
+            <div class="dash-stat-icon">FCFA </div>
+            <div>
+              <div class="dash-stat-label">Revenue (all time)</div>
+              <div class="dash-stat-value" id="stat-revenue">—</div>
+              <div class="dash-stat-delta" id="stat-revenue-sub"></div>
+            </div>
+          </div>
+          <div class="dash-stat-card blue">
+            <div class="dash-stat-icon"></div>
+            <div>
+              <div class="dash-stat-label">Orders</div>
+              <div class="dash-stat-value" id="stat-orders">—</div>
+              <div class="dash-stat-delta" id="stat-orders-sub"></div>
+            </div>
+          </div>
+          <div class="dash-stat-card gold">
+            <div class="dash-stat-icon"></div>
+            <div>
+              <div class="dash-stat-label">Products Listed</div>
+              <div class="dash-stat-value" id="stat-products">—</div>
+              <div class="dash-stat-delta" id="stat-products-sub"></div>
+            </div>
+          </div>
+          <div class="dash-stat-card red">
+            <div class="dash-stat-icon">âš </div>
+            <div>
+              <div class="dash-stat-label">Low Stock Items</div>
+              <div class="dash-stat-value" id="stat-lowstock">—</div>
+              <div class="dash-stat-delta" id="stat-lowstock-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-overview-grid">
+
+          <!-- Revenue Chart -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title">Revenue (Last 7 Days)</div>
+              <div class="dash-card-action">FCFA CFA</div>
+            </div>
+            <div class="dash-chart-wrap" id="chart-wrap"></div>
+            <div class="dash-chart-legend">
+              <div class="dash-legend-item"><div class="dash-legend-dot" style="background:#2563eb;"></div> Revenue</div>
+              <div class="dash-legend-item"><div class="dash-legend-dot" style="background:#7494ec;"></div> Orders</div>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title">Recent Orders</div>
+              <button class="dash-card-action" onclick="showPanel('orders')">View all â†’</button>
+            </div>
+            <div class="dash-order-list" id="recent-orders-list"></div>
+          </div>
+
+        </div>
+
+        <!-- Top Products Table -->
+        <div class="dash-card" style="margin-top:0;">
+          <div class="dash-card-header">
+            <div class="dash-card-title">Top Products</div>
+            <button class="dash-card-action" onclick="showPanel('products')">Manage â†’</button>
+          </div>
+          <table class="dash-data-table" id="top-products-table">
+            <thead><tr><th>Product</th><th>Price</th><th>Sold</th><th>Stock</th></tr></thead>
+            <tbody id="top-products-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           ORDERS PANEL
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+      <div class="dash-tab-panel" id="panel-orders">
+        <div class="dash-page-header">
+          <div>
+            <div class="dash-page-title">Orders</div>
+            <div class="dash-page-sub">Manage and fulfil customer orders.</div>
+          </div>
+        </div>
+
+        <!-- Status filter tabs -->
+        <div class="dash-order-status-tabs">
+          <button class="dash-ostab active" onclick="filterOrders('all', this)">All</button>
+          <button class="dash-ostab" onclick="filterOrders('pending', this)">Pending</button>
+          <button class="dash-ostab" onclick="filterOrders('confirmed', this)">Confirmed</button>
+          <button class="dash-ostab" onclick="filterOrders('shipped', this)">Shipped</button>
+          <button class="dash-ostab" onclick="filterOrders('delivered', this)">Delivered</button>
+          <button class="dash-ostab" onclick="filterOrders('cancelled', this)">Cancelled</button>
+        </div>
+
+        <div class="dash-table-toolbar">
+          <input class="dash-table-search" type="text" placeholder="Search orders..." oninput="searchOrders(this.value)">
+        </div>
+
+        <table class="dash-data-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           PRODUCTS PANEL
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+      <div class="dash-tab-panel" id="panel-products">
+        <div class="dash-page-header">
+          <div>
+            <div class="dash-page-title">Products</div>
+            <div class="dash-page-sub">Manage your product listings.</div>
+          </div>
+          <div class="dash-header-actions">
+            <button class="dash-btn-primary" onclick="openAddProduct()">+ Add Product</button>
+          </div>
+        </div>
+
+        <div class="dash-table-toolbar">
+          <input class="dash-table-search" type="text" placeholder="Search products..." oninput="searchProducts(this.value)">
+          <select class="dash-table-filter-select" onchange="filterProducts(this.value)">
+            <option value="">All categories</option>
+            <option>Food & Drinks</option>
+            <option>Fashion & Clothing</option>
+            <option>Electronics</option>
+            <option>Crafts & Art</option>
+            <option>Services</option>
+            <option>Agriculture</option>
+            <option>Beauty & Health</option>
+            <option>Home & Garden</option>
+          </select>
+          <select class="dash-table-filter-select" onchange="filterByStock(this.value)">
+            <option value="">All stock</option>
+            <option value="ok">In stock</option>
+            <option value="low">Low stock</option>
+            <option value="out">Out of stock</option>
+          </select>
+        </div>
+
+        <table class="dash-data-table" id="productsTable">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Sold</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </div>
+
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           CHAT PANEL
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+      <div class="dash-tab-panel" id="panel-chat">
+        <div class="dash-page-header">
+          <div>
+            <div class="dash-page-title">Messages</div>
+            <div class="dash-page-sub">Chat with your customers.</div>
+          </div>
+        </div>
+
+        <div class="dash-chat-shell">
+          <!-- Thread List -->
+          <div class="dash-chat-list">
+            <div class="dash-chat-list-header">
+              <span>Conversations</span>
+              <span id="unread-count" style="background:#c0392b;color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;">2</span>
+            </div>
+            <div id="chat-threads"></div>
+          </div>
+
+          <!-- Chat Window -->
+          <div class="dash-chat-window">
+            <div class="dash-chat-window-header">
+              <div class="dash-chat-thread-avatar" id="chat-window-avatar" style="background:#e0f2fe;color:#2563eb;">N</div>
+              <div>
+                <div class="dash-chat-window-name" id="chat-window-name">Select a conversation</div>
+                <div class="dash-chat-window-status" id="chat-window-status">—</div>
+              </div>
+            </div>
+            <div class="dash-chat-messages" id="chat-messages">
+              <div style="text-align:center;color:#9ca3af;font-size:14px;padding:3rem;">Select a conversation to start chatting.</div>
+            </div>
+            <div class="dash-chat-input-bar" style="background:#f0f2f5;gap:8px;padding:10px 12px;">
+              <label style="cursor:pointer;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#fff;color:#6b7280;box-shadow:0 1px 3px rgba(0,0,0,0.1);" title="Send image">
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <input type="file" id="dash-image-input" accept="image/*" style="display:none;" onchange="sendDashChatImage(this)">
+              </label>
+              <input class="dash-chat-input" type="text" placeholder="Type a message..." id="chat-input" onkeydown="if(event.key==='Enter')sendMessage()" style="border-radius:22px;border:none;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+              <button class="dash-chat-send-btn" onclick="sendMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+           SETTINGS PANEL
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+      <div class="dash-tab-panel" id="panel-settings">
+        <div class="dash-page-header">
+          <div>
+            <div class="dash-page-title">Shop Settings</div>
+            <div class="dash-page-sub">Update your shop profile and preferences.</div>
+          </div>
+        </div>
+
+        <div class="dash-settings-grid">
+
+          <!-- Left Column -->
+          <div>
+            <div class="dash-card">
+              <div class="dash-card-header"><div class="dash-card-title">Shop Profile</div></div>
+
+              <div class="dash-shop-logo-upload">
+                <div class="dash-logo-preview" id="set-logo-preview" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:#f3f4f6;border-radius:12px;width:72px;height:72px;overflow:hidden;flex-shrink:0;"></div>
+                <div>
+                  <input type="file" id="logo-file-input" accept="image/jpeg,image/png" style="display:none;" onchange="onLogoFileSelected(this)">
+                  <button class="dash-btn-outline" style="margin-bottom:6px;" onclick="document.getElementById('logo-file-input').click()">Change Logo</button>
+                  <div class="dash-upload-hint">JPG or PNG. <strong>Max 2MB.</strong></div>
+                </div>
+              </div>
+
+              <div class="dash-form-group">
+                <label class="dash-form-label">Shop Name</label>
+                <input class="dash-form-input" id="set-shop-name" type="text" placeholder="Your shop name">
+              </div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">Category</label>
+                <select class="dash-form-select" id="set-shop-cat">
+                  <option>Food &amp; Drinks</option>
+                  <option>Fashion &amp; Clothing</option>
+                  <option>Electronics</option>
+                  <option>Crafts &amp; Art</option>
+                  <option>Services</option>
+                  <option>Agriculture</option>
+                  <option>Beauty &amp; Health</option>
+                  <option>Home &amp; Garden</option>
+                </select>
+              </div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">Shop Description</label>
+                <textarea class="dash-form-textarea" id="set-shop-desc" rows="3" placeholder="Tell customers about your shop…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <div class="dash-card">
+              <div class="dash-card-header"><div class="dash-card-title">Location & Contact</div></div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">City / Town</label>
+                <select class="dash-form-select" id="set-shop-loc">
+                  <option>Douala</option>
+                  <option>Buea</option>
+                  <option>Yaoundé</option>
+                  <option>Bafoussam</option>
+                  <option>Bamenda</option>
+                  <option>Limbe</option>
+                </select>
+              </div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">Neighbourhood / Address</label>
+                <input class="dash-form-input" id="set-shop-address" type="text" placeholder="e.g. Akwa, near Central Market">
+              </div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">Business Phone</label>
+                <input class="dash-form-input" id="set-shop-phone" type="tel" placeholder="+237 6XX XXX XXX">
+              </div>
+            </div>
+
+            <div class="dash-card" style="margin-top:1.25rem;">
+              <div class="dash-card-header"><div class="dash-card-title">Payment Accounts</div></div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">MTN MoMo Number</label>
+                <input class="dash-form-input" id="set-mtn" type="tel" placeholder="+237 6XX XXX XXX">
+              </div>
+              <div class="dash-form-group">
+                <label class="dash-form-label">Orange Money Number</label>
+                <input class="dash-form-input" id="set-orange" type="tel" placeholder="+237 6XX XXX XXX">
+              </div>
+            </div>
+
+            <div style="margin-top:1.25rem;display:flex;gap:10px;">
+              <button class="dash-btn-primary" id="save-btn" onclick="saveSettings()">Save Changes</button>
+              <button class="dash-btn-outline">Cancel</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- â•â• PRODUCT ADD / EDIT MODAL â•â• -->
+  <div class="prod-modal-overlay" id="productModal">
+    <div class="prod-modal-card">
+
+      <div class="prod-modal-header">
+        <h2 id="modal-title">Add Product</h2>
+        <button class="prod-modal-close" onclick="closeProductModal()">Ã—</button>
+      </div>
+
+      <div class="prod-modal-body">
+        <div class="prod-form-grid">
+
+          <div class="prod-form-field full">
+            <label class="prod-form-label">Product Name *</label>
+            <input class="prod-form-input" type="text" id="pm-name"
+              placeholder="e.g. Ndolé Special" required>
+          </div>
+
+          <div class="prod-form-field">
+            <label class="prod-form-label">Price (FCFA CFA) *</label>
+            <input class="prod-form-input" type="number" id="pm-price"
+              min="0" step="50" placeholder="e.g. 5000">
+          </div>
+
+          <div class="prod-form-field">
+            <label class="prod-form-label">Stock Quantity *</label>
+            <input class="prod-form-input" type="number" id="pm-stock"
+              min="0" placeholder="e.g. 20">
+          </div>
+
+          <div class="prod-form-field full">
+            <label class="prod-form-label">Description</label>
+            <textarea class="prod-form-input" id="pm-desc" rows="2"
+              placeholder="Briefly describe this product..."></textarea>
+          </div>
+
+          <!-- ── Media upload: Image or Video ── -->
+          <div class="prod-form-field full">
+            <label class="prod-form-label">Product Media</label>
+
+            <!-- Tabs -->
+            <div class="media-type-tabs">
+              <button type="button" class="media-tab active" id="tab-image" onclick="switchMediaTab('image')">🖼️ Image</button>
+              <button type="button" class="media-tab" id="tab-video" onclick="switchMediaTab('video')">🎬 Video</button>
+            </div>
+
+            <!-- Image upload -->
+            <div id="upload-image-section">
+              <div class="prod-img-upload-area" onclick="document.getElementById('pm-image').click()">
+                <div class="prod-img-preview-box" id="prodImgBox">
+                  <span class="prod-img-placeholder"></span>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#1c1c1c;margin-bottom:4px;">Click to choose a photo</div>
+                  <div style="font-size:12px;color:#9ca3af;">JPG, PNG or WebP · max 5 MB</div>
+                  <div style="font-size:12px;color:#2563eb;margin-top:4px;" id="imgFileName"></div>
+                </div>
+                <input type="file" id="pm-image" accept="image/*" style="display:none;" onchange="handleImageUpload(this)">
+              </div>
+            </div>
+
+            <!-- Video upload -->
+            <div id="upload-video-section" style="display:none;">
+              <div class="prod-img-upload-area" onclick="document.getElementById('pm-video').click()">
+                <div class="prod-img-preview-box" id="prodVideoBox" style="background:#111;">
+                  <span class="prod-img-placeholder" style="font-size:2rem;color:#fff;">🎬</span>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#1c1c1c;margin-bottom:4px;">Click to choose a video</div>
+                  <div style="font-size:12px;color:#9ca3af;">MP4, MOV or WebM · max 100 MB · max 3 min</div>
+                  <div style="font-size:12px;color:#6b7280;margin-top:2px;">Recommended: 16:9 ratio, min 480p resolution</div>
+                  <div style="font-size:12px;color:#2563eb;margin-top:4px;" id="videoFileName"></div>
+                </div>
+                <input type="file" id="pm-video" accept="video/mp4,video/quicktime,video/webm,video/avi,video/x-msvideo" style="display:none;" onchange="handleVideoUpload(this)">
+              </div>
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;margin-top:8px;font-size:12px;color:#92400e;line-height:1.5;">
+                📋 <strong>Video guidelines:</strong> MP4/MOV/WebM · Max 100 MB · Duration 10 s – 3 min · Min 480p · 16:9 aspect ratio recommended · No excessive text overlay or watermarks
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div id="prod-form-error"
+          style="color:#c0392b;font-size:13px;margin-top:12px;display:none;"></div>
+      </div>
+
+      <div class="prod-modal-footer">
+        <button class="dash-btn-outline" onclick="closeProductModal()">Cancel</button>
+        <button class="dash-btn-primary" onclick="saveProduct()">Save Product</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    // ─── STATE ──────────────────────────────────────────────────────────
+    let products     = [];
+    let orders       = [];
+    let conversations = [];
+    let activeShop          = null;
+    let currentProductImage = null;
+    let currentProductVideo = null;   // File object for new video to upload
+    let currentProductVideoUrl = null; // existing video URL (when editing)
+    let currentMediaType    = 'image'; // 'image' | 'video'
+    let currentLogoBase64   = null;
+    let editingProductId    = null;
+    let activeConvId        = null;
+
+    // ─── TIME HELPERS ────────────────────────────────────────────────────
+    function formatRelTime(iso) {
+      if (!iso) return '';
+      const diff = (Date.now() - new Date(iso)) / 1000;
+      if (diff < 60)    return 'just now';
+      if (diff < 3600)  return Math.floor(diff / 60) + 'm';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+      return Math.floor(diff / 86400) + 'd';
+    }
+    function formatMsgTime(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ─── NORMALIZERS ─────────────────────────────────────────────────────
+    function normalizeProduct(p) {
+      return {
+        id:    p.id,
+        name:  p.name,
+        price: p.price,
+        stock: p.stock,
+        sold:  p.sold || 0,
+        desc:  p.description || '',
+        cat:   p.cat || '',
+        image: p.image_url || p.image || null,
+        video: p.video_url || null,
+        approved: p.approved
+      };
+    }
+
+    function normalizeOrder(o) {
+      const raw  = o.created_at || o.date || null;
+      const date = raw
+        ? new Date(raw).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '—';
+      const customer = o.buyer_name || o.customer_name || o.customer || 'Customer';
+      return {
+        id:             String(o.id || o.order_id || ''),
+        customer,
+        avatar:         customer.charAt(0).toUpperCase(),
+        product:        o.product_name || (o.items && o.items[0]?.name) || 'Product',
+        qty:            Number(o.qty || o.quantity || (o.items && o.items[0]?.qty) || 1),
+        amount:         Number(o.total || o.total_amount || o.amount || 0),
+        status:         o.status || 'pending',
+        buyer_confirmed: o.buyer_confirmed || false,
+        buyer_id:       o.buyer_id || o.customer_id || o.user_id || null,
+        date,
+        _raw:           raw
+      };
+    }
+
+    function normalizeThread(t) {
+      /* RPC returns customer_id / customer_name / last_at */
+      const name   = t.customer_name || t.other_user_name || t.buyer_name || t.sender_name || t.name || 'Customer';
+      const userId = t.customer_id   || t.other_user_id   || t.user_id    || t.id;
+      return {
+        id:          userId,
+        otherUserId: userId,
+        name,
+        initial:     name.charAt(0).toUpperCase(),
+        preview:     t.last_message || t.preview || '',
+        time:        formatRelTime(t.last_at || t.updated_at || t.created_at),
+        unread:      Number(t.unread_count || t.unread || 0),
+        messages:    []
+      };
+    }
+
+    // ─── PANEL SWITCHING ─────────────────────────────────────────────────
+    function showPanel(name, navEl, tabEl) {
+      document.querySelectorAll('.dash-tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      document.querySelectorAll('.dash-nav-item').forEach(el => el.classList.remove('active'));
+      if (navEl) navEl.classList.add('active');
+      document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
+      if (tabEl) tabEl.classList.add('active');
+      if (name === 'settings') populateSettings();
+    }
+
+    // ─── STAT CARDS ──────────────────────────────────────────────────────
+    function updateStats() {
+      const revenue  = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + o.amount, 0);
+      const pending  = orders.filter(o => o.status === 'pending').length;
+      const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length
+                     + products.filter(p => p.stock === 0).length;
+
+      const r = document.getElementById('stat-revenue');
+      const o = document.getElementById('stat-orders');
+      const pr = document.getElementById('stat-products');
+      const l = document.getElementById('stat-lowstock');
+      const rs = document.getElementById('stat-revenue-sub');
+      const os = document.getElementById('stat-orders-sub');
+      const ps = document.getElementById('stat-products-sub');
+      const ls = document.getElementById('stat-lowstock-sub');
+
+      if (r)  r.textContent  = orders.length ? 'FCFA ' + revenue.toLocaleString() : '—';
+      if (o)  o.textContent  = orders.length;
+      if (pr) pr.textContent = products.length;
+      if (l)  l.textContent  = lowStock || '—';
+
+      if (rs) { rs.textContent = revenue > 0 ? 'From ' + orders.filter(o => o.status !== 'cancelled').length + ' order(s)' : 'No sales yet'; rs.className = 'dash-stat-delta'; }
+      if (os) { os.textContent = pending > 0 ? pending + ' pending' : orders.length ? 'All up to date' : 'No orders yet'; os.className = 'dash-stat-delta' + (pending ? ' dash-delta-up' : ''); }
+      if (ps) { ps.textContent = products.length ? products.length + ' listing(s)' : 'No products yet'; ps.className = 'dash-stat-delta'; }
+      if (ls) { ls.className = 'dash-stat-delta' + (lowStock > 0 ? ' dash-delta-down' : ''); ls.textContent = lowStock > 0 ? 'Needs attention' : 'All stock OK'; }
+    }
+
+    // ─── CHART ───────────────────────────────────────────────────────────
+    function buildChart() {
+      const wrap = document.getElementById('chart-wrap');
+      if (!orders.length) {
+        wrap.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:3rem 1rem;font-size:14px;">No order data yet — chart will populate as orders come in.</div>';
+        return;
+      }
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const buckets = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        buckets[d.toDateString()] = { day: days[d.getDay()], revenue: 0, count: 0 };
+      }
+      orders.forEach(o => {
+        if (!o._raw) return;
+        const key = new Date(o._raw).toDateString();
+        if (buckets[key]) { buckets[key].revenue += o.amount; buckets[key].count++; }
+      });
+      const data = Object.values(buckets);
+      const maxRev = Math.max(...data.map(d => d.revenue), 1);
+      const maxOrd = Math.max(...data.map(d => d.count), 1);
+      wrap.innerHTML = data.map(d => `
+        <div class="dash-chart-bar-group">
+          <div class="dash-chart-bar revenue" style="height:${Math.round((d.revenue/maxRev)*100)}%" title="FCFA ${d.revenue.toLocaleString()}"></div>
+          <div class="dash-chart-bar orders"  style="height:${Math.round((d.count/maxOrd)*100)}%"   title="${d.count} order(s)"></div>
+          <div class="dash-chart-label">${d.day}</div>
+        </div>
+      `).join('');
+    }
+
+    // ─── RECENT ORDERS (overview) ────────────────────────────────────────
+    function buildRecentOrders() {
+      const el = document.getElementById('recent-orders-list');
+      if (!orders.length) {
+        el.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:2rem;font-size:14px;">No orders yet.</div>';
+        return;
+      }
+      const sc = { pending:'dash-status-pending', confirmed:'dash-status-shipped', shipped:'dash-status-shipped', delivered:'dash-status-done', cancelled:'dash-status-cancelled' };
+      el.innerHTML = orders.slice(0, 5).map(o => `
+        <div class="dash-order-row">
+          <div class="dash-order-avatar">${o.avatar}</div>
+          <div class="dash-order-info">
+            <div class="dash-order-name">${o.customer}</div>
+            <div class="dash-order-meta">${o.id.slice(0,8)}… · ${o.product}</div>
+          </div>
+          <div class="dash-order-amount">FCFA ${o.amount.toLocaleString()}</div>
+          <div class="dash-status-pill ${sc[o.status] || ''}">${o.status}</div>
+        </div>`).join('');
+    }
+
+    // ─── TOP PRODUCTS (overview) ─────────────────────────────────────────
+    function buildTopProducts() {
+      const el = document.getElementById('top-products-body');
+      const sorted = [...products].sort((a, b) => b.sold - a.sold).slice(0, 5);
+      if (!sorted.length) {
+        el.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:2rem;">No products yet.</td></tr>';
+        return;
+      }
+      el.innerHTML = sorted.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td>FCFA ${p.price.toLocaleString()}</td>
+          <td>${p.sold}</td>
+          <td>${stockBadge(p.stock)}</td>
+        </tr>`).join('');
+    }
+
+    function stockBadge(stock) {
+      if (stock === 0) return `<span class="dash-stock-badge dash-stock-out">Out</span>`;
+      if (stock <= 5)  return `<span class="dash-stock-badge dash-stock-low">${stock} left</span>`;
+      return `<span class="dash-stock-badge dash-stock-ok">${stock}</span>`;
+    }
+
+    // ─── VIDEO PLAYER OVERLAY (watch a product's uploaded video) ─────────
+    function watchVideo(url) {
+      if (!url) return;
+      let ov = document.getElementById('video-watch-overlay');
+      if (!ov) {
+        ov = document.createElement('div');
+        ov.id = 'video-watch-overlay';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:24px;';
+        ov.addEventListener('click', e => { if (e.target === ov) closeVideoOverlay(); });
+        document.body.appendChild(ov);
+      }
+      ov.innerHTML = `
+        <div style="position:relative;max-width:900px;width:100%;">
+          <button onclick="closeVideoOverlay()" title="Close" style="position:absolute;top:-42px;right:0;background:none;border:none;color:#fff;font-size:30px;line-height:1;cursor:pointer;">&times;</button>
+          <video src="${url}" controls autoplay playsinline style="width:100%;max-height:80vh;border-radius:10px;background:#000;display:block;"></video>
+        </div>`;
+      ov.style.display = 'flex';
+    }
+    function closeVideoOverlay() {
+      const ov = document.getElementById('video-watch-overlay');
+      if (!ov) return;
+      ov.querySelector('video')?.pause();
+      ov.style.display = 'none';
+      ov.innerHTML = '';
+    }
+
+    // ─── ORDERS TABLE ────────────────────────────────────────────────────
+    let orderFilter = 'all';
+    let orderQuery  = '';
+
+    function renderOrdersTable(list) {
+      const el = document.getElementById('orders-body');
+      if (!list.length) {
+        el.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:2rem;">No orders found.</td></tr>';
+        return;
+      }
+      const sc = { pending:'dash-status-pending', confirmed:'dash-status-shipped', shipped:'dash-status-shipped', delivered:'dash-status-done', cancelled:'dash-status-cancelled' };
+      el.innerHTML = list.map(o => {
+        const awaitingBuyer = o.status === 'delivered' && !o.buyer_confirmed;
+        const pillClass = awaitingBuyer ? 'dash-status-pending' : (sc[o.status] || '');
+        const pillLabel = awaitingBuyer ? 'Awaiting Buyer'
+                        : o.status === 'confirmed' ? 'Confirmed'
+                        : o.status.charAt(0).toUpperCase() + o.status.slice(1);
+        return `
+        <tr>
+          <td style="font-size:12px;">${o.id.slice(0,8)}…</td>
+          <td><div style="display:flex;align-items:center;gap:8px;"><div class="dash-order-avatar" style="width:30px;height:30px;font-size:12px;">${o.avatar}</div>${o.customer}</div></td>
+          <td>${o.product}</td>
+          <td>${o.qty}</td>
+          <td>FCFA ${o.amount.toLocaleString()}</td>
+          <td>${o.date}</td>
+          <td><span class="dash-status-pill ${pillClass}" title="${awaitingBuyer ? 'Waiting for buyer to confirm receipt' : ''}">${pillLabel}</span></td>
+          <td>
+            <div class="dash-row-actions">
+              ${o.status === 'pending'    ? `<button class="dash-btn-primary" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus('${o.id}','confirmed')">Confirm</button>` : ''}
+              ${o.status === 'confirmed'  ? `<button class="dash-btn-outline" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus('${o.id}','shipped')">Ship</button>` : ''}
+              ${o.status === 'shipped'    ? `<button class="dash-btn-outline" style="padding:4px 10px;font-size:12px;" onclick="updateOrderStatus('${o.id}','delivered')">Mark Delivered</button>` : ''}
+              ${o.status !== 'cancelled' && o.status !== 'delivered' ? `<button class="dash-btn-outline" style="padding:4px 10px;font-size:12px;color:#c0392b;border-color:#c0392b;" onclick="updateOrderStatus('${o.id}','cancelled')">Cancel</button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function applyOrderFilters() {
+      let list = [...orders];
+      if (orderFilter !== 'all') list = list.filter(o => o.status === orderFilter);
+      if (orderQuery) list = list.filter(o =>
+        o.customer.toLowerCase().includes(orderQuery) ||
+        o.id.toLowerCase().includes(orderQuery) ||
+        o.product.toLowerCase().includes(orderQuery));
+      renderOrdersTable(list);
+    }
+
+    function filterOrders(status, el) {
+      orderFilter = status;
+      document.querySelectorAll('.dash-ostab').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      applyOrderFilters();
+    }
+
+    function searchOrders(q) { orderQuery = q.toLowerCase(); applyOrderFilters(); }
+
+    async function updateOrderStatus(id, newStatus) {
+      try { await OrdersAPI.updateStatus(id, newStatus); } catch(e) { console.warn('Status update failed:', e); return; }
+      const o = orders.find(o => o.id === id);
+      if (o) {
+        o.status = newStatus;
+        /* Send a message notification to the buyer */
+        if (o.buyer_id && activeShop) {
+          const shortId = id.slice(0, 8).toUpperCase();
+          const msgMap = {
+            confirmed: `✅ Good news! Your order #${shortId} has been confirmed by the seller. We're preparing it for shipment.`,
+            shipped:   `🚚 Your order #${shortId} has been shipped! Your package is on its way — the delivery agent will contact you soon.`,
+            delivered: `📦 Your order #${shortId} has been marked as delivered. Please open the order tracking page and tap "I've Received My Order" to confirm receipt.`,
+            cancelled: `❌ Your order #${shortId} has been cancelled by the seller. Please contact us if you have any questions.`
+          };
+          const msg = msgMap[newStatus];
+          if (msg) {
+            MessagesAPI.send({ shop_id: activeShop.id, receiver_id: o.buyer_id, text: msg })
+              .catch(e => console.warn('Notification send failed:', e));
+          }
+        }
+      }
+      applyOrderFilters();
+      buildRecentOrders();
+      updateStats();
+      buildChart();
+      updateBadges();
+    }
+
+    // ─── PRODUCTS TABLE ──────────────────────────────────────────────────
+    let prodCatFilter   = '';
+    let prodStockFilter = '';
+    let prodQuery       = '';
+
+    function renderProductsTable(list) {
+      const el = document.getElementById('products-body');
+      if (!list.length) {
+        el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:2rem;">No products yet. Click "+ Add Product" to create your first listing.</td></tr>';
+        return;
+      }
+      el.innerHTML = list.map(p => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="dash-product-row-thumb" style="display:flex;align-items:center;justify-content:center;">
+                ${p.video
+                  ? `<div onclick="watchVideo('${p.video}')" title="Watch video" style="position:relative;width:100%;height:100%;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i class="ti ti-player-play-filled" style="font-size:1rem;color:#fff;"></i></div>`
+                  : p.image
+                    ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">`
+                    : `<i class="ti ti-package" style="font-size:1.1rem;color:#9ca3af;"></i>`}
+              </div>
+              <div>
+                <div class="dash-product-row-name">${p.name}</div>
+                <div style="display:flex;gap:5px;align-items:center;margin-top:2px;flex-wrap:wrap;">
+                  ${p.video ? `<span style="font-size:10px;background:#dbeafe;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:600;">🎬 VIDEO</span>` : ''}
+                  ${p.approved === false
+                    ? `<span title="Awaiting admin approval before it appears on the site" style="font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600;">⏳ PENDING APPROVAL</span>`
+                    : (p.approved === true
+                        ? `<span style="font-size:10px;background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:4px;font-weight:600;">● LIVE</span>`
+                        : '')}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>${p.cat || '—'}</td>
+          <td>FCFA ${p.price.toLocaleString()}</td>
+          <td>${stockBadge(p.stock)}</td>
+          <td>${p.sold}</td>
+          <td>
+            <div class="dash-row-actions">
+              <button class="dash-icon-btn" onclick="editProduct('${p.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
+              <button class="dash-icon-btn danger" onclick="deleteProduct('${p.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    function applyProductFilters() {
+      let list = [...products];
+      if (prodCatFilter)              list = list.filter(p => p.cat === prodCatFilter);
+      if (prodStockFilter === 'ok')   list = list.filter(p => p.stock > 5);
+      if (prodStockFilter === 'low')  list = list.filter(p => p.stock > 0 && p.stock <= 5);
+      if (prodStockFilter === 'out')  list = list.filter(p => p.stock === 0);
+      if (prodQuery) list = list.filter(p => p.name.toLowerCase().includes(prodQuery));
+      renderProductsTable(list);
+    }
+
+    function searchProducts(q) { prodQuery = q.toLowerCase(); applyProductFilters(); }
+    function filterProducts(c) { prodCatFilter = c; applyProductFilters(); }
+    function filterByStock(s)  { prodStockFilter = s; applyProductFilters(); }
+
+    // ─── PRODUCT MODAL ───────────────────────────────────────────────────
+    function _resetMediaState() {
+      currentProductImage    = null;
+      currentProductVideo    = null;
+      currentProductVideoUrl = null;
+      switchMediaTab('image');
+      document.getElementById('imgFileName').textContent   = '';
+      document.getElementById('videoFileName').textContent = '';
+      document.getElementById('prodImgBox').innerHTML   = '<span class="prod-img-placeholder"></span>';
+      document.getElementById('prodVideoBox').innerHTML = '<span class="prod-img-placeholder" style="font-size:2rem;color:#fff;">🎬</span>';
+      document.getElementById('pm-image').value = '';
+      document.getElementById('pm-video').value = '';
+    }
+
+    function openAddProduct() {
+      editingProductId = null;
+      _resetMediaState();
+      document.getElementById('modal-title').textContent = 'Add Product';
+      document.getElementById('pm-name').value  = '';
+      document.getElementById('pm-price').value = '';
+      document.getElementById('pm-stock').value = '';
+      document.getElementById('pm-desc').value  = '';
+      document.getElementById('prod-form-error').style.display = 'none';
+      document.getElementById('productModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function editProduct(id) {
+      const p = products.find(p => String(p.id) === String(id));
+      if (!p) return;
+      editingProductId = p.id;
+      _resetMediaState();
+      document.getElementById('modal-title').textContent = 'Edit Product';
+      document.getElementById('pm-name').value  = p.name;
+      document.getElementById('pm-price').value = p.price;
+      document.getElementById('pm-stock').value = p.stock;
+      document.getElementById('pm-desc').value  = p.desc || '';
+
+      if (p.video) {
+        currentProductVideoUrl = p.video;
+        switchMediaTab('video');
+        document.getElementById('videoFileName').textContent = 'Video loaded';
+        document.getElementById('prodVideoBox').innerHTML =
+          `<video src="${p.video}" style="width:100%;height:100%;object-fit:contain;background:#000;" controls playsinline onclick="event.stopPropagation()"></video>`;
+      } else if (p.image) {
+        currentProductImage = p.image;
+        document.getElementById('imgFileName').textContent = 'Image loaded';
+        document.getElementById('prodImgBox').innerHTML =
+          `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">`;
+      }
+
+      document.getElementById('prod-form-error').style.display = 'none';
+      document.getElementById('productModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function switchMediaTab(type) {
+      currentMediaType = type;
+      document.getElementById('tab-image').classList.toggle('active', type === 'image');
+      document.getElementById('tab-video').classList.toggle('active', type === 'video');
+      document.getElementById('upload-image-section').style.display = type === 'image' ? 'block' : 'none';
+      document.getElementById('upload-video-section').style.display = type === 'video' ? 'block' : 'none';
+    }
+
+    function handleImageUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) { alert('Image too large. Max 5 MB.'); return; }
+      document.getElementById('imgFileName').textContent = file.name;
+      compressImage(file, 480, 480, 0.7).then(base64 => {
+        currentProductImage = base64;
+        document.getElementById('prodImgBox').innerHTML =
+          `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
+      });
+    }
+
+    function handleVideoUpload(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+      const errEl = document.getElementById('prod-form-error');
+
+      const allowed = ['video/mp4','video/quicktime','video/webm','video/avi','video/x-msvideo'];
+      if (!allowed.includes(file.type)) {
+        errEl.textContent = 'Unsupported format. Use MP4, MOV, or WebM.';
+        errEl.style.display = 'block'; input.value = ''; return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        errEl.textContent = `Video too large (${(file.size/1024/1024).toFixed(1)} MB). Max is 100 MB.`;
+        errEl.style.display = 'block'; input.value = ''; return;
+      }
+
+      const objUrl = URL.createObjectURL(file);
+      const vid = document.createElement('video');
+      vid.preload = 'metadata';
+      vid.onloadedmetadata = () => {
+        URL.revokeObjectURL(objUrl);
+        if (vid.duration < 10) {
+          errEl.textContent = `Video too short (${Math.round(vid.duration)}s). Minimum is 10 seconds.`;
+          errEl.style.display = 'block'; input.value = ''; return;
+        }
+        if (vid.duration > 180) {
+          errEl.textContent = `Video too long (${Math.round(vid.duration)}s). Maximum is 3 minutes (180 s).`;
+          errEl.style.display = 'block'; input.value = ''; currentProductVideo = null; return;
+        }
+        errEl.style.display = 'none';
+        currentProductVideo = file;
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        document.getElementById('videoFileName').textContent =
+          `✓ ${file.name} · ${sizeMB} MB · ${Math.round(vid.duration)}s`;
+        const previewUrl = URL.createObjectURL(file);
+        document.getElementById('prodVideoBox').innerHTML =
+          `<video src="${previewUrl}" style="width:100%;height:100%;object-fit:contain;background:#000;border-radius:10px;" controls playsinline onclick="event.stopPropagation()"></video>`;
+      };
+      vid.onerror = () => {
+        errEl.textContent = 'Could not read video. Please try a different file.';
+        errEl.style.display = 'block'; input.value = '';
+      };
+      vid.src = objUrl;
+    }
+
+    function compressImage(file, maxW, maxH, quality) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+            if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function dataURLtoBlob(dataURL) {
+      const [header, data] = dataURL.split(',');
+      const mime = header.match(/:(.*?);/)[1];
+      const bstr = atob(data);
+      const arr  = new Uint8Array(bstr.length);
+      for (let i = 0; i < bstr.length; i++) arr[i] = bstr.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+
+    async function saveProduct() {
+      const errEl  = document.getElementById('prod-form-error');
+      const name   = document.getElementById('pm-name').value.trim();
+      const price  = parseInt(document.getElementById('pm-price').value, 10);
+      const stock  = parseInt(document.getElementById('pm-stock').value, 10);
+      const desc   = document.getElementById('pm-desc').value.trim();
+      if (!name || isNaN(price) || isNaN(stock) || price < 0 || stock < 0) {
+        errEl.textContent = 'Please fill in name, price, and stock quantity.';
+        errEl.style.display = 'block'; return;
+      }
+      errEl.style.display = 'none';
+      const saveBtn = document.querySelector('#productModal .dash-btn-primary');
+      saveBtn.textContent = 'Saving…'; saveBtn.disabled = true;
+      try {
+        const baseData = { name, price, stock, description: desc };
+        let saved;
+
+        if (editingProductId !== null) {
+          const payload = { ...baseData };
+          if (currentMediaType === 'image') {
+            if (currentProductImage && !currentProductImage.startsWith('data:')) {
+              payload.image_url = currentProductImage;
+            }
+          } else {
+            if (currentProductVideoUrl) payload.video_url = currentProductVideoUrl;
+          }
+          saved = await ProductsAPI.update(editingProductId, payload);
+        } else {
+          saved = await ProductsAPI.create({
+            ...baseData, shop_id: activeShop.id, cat: activeShop.cat || ''
+          });
+        }
+
+        // Upload image (base64 → Storage)
+        if (currentMediaType === 'image' && currentProductImage && currentProductImage.startsWith('data:')) {
+          try {
+            saveBtn.textContent = 'Uploading image…';
+            const blob = dataURLtoBlob(currentProductImage);
+            const ext  = blob.type.split('/')[1] || 'jpg';
+            const file = new File([blob], `product.${ext}`, { type: blob.type });
+            const url  = await ProductsAPI.uploadImage(saved.id, file);
+            saved = await ProductsAPI.update(saved.id, { image_url: url, video_url: null });
+          } catch (imgErr) {
+            console.warn('Image upload failed:', imgErr.message);
+          }
+        }
+
+        // Upload video file → Storage
+        if (currentMediaType === 'video' && currentProductVideo) {
+          try {
+            saveBtn.textContent = 'Uploading video…';
+            const url = await ProductsAPI.uploadVideo(saved.id, currentProductVideo);
+            saved = await ProductsAPI.update(saved.id, { video_url: url, image_url: null });
+          } catch (vidErr) {
+            console.warn('Video upload failed:', vidErr.message);
+          }
+        }
+
+        const norm = normalizeProduct(saved);
+        if (editingProductId !== null) {
+          const idx = products.findIndex(p => String(p.id) === String(editingProductId));
+          if (idx !== -1) products[idx] = norm;
+        } else {
+          products.unshift(norm);
+        }
+        applyProductFilters();
+        buildTopProducts();
+        updateStats();
+        updateBadges();
+        closeProductModal();
+        if (editingProductId === null && norm.approved === false) {
+          alert('Product submitted for review. It will appear on the marketplace once an administrator approves it.');
+        }
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not save product.';
+        errEl.style.display = 'block';
+      } finally {
+        saveBtn.textContent = 'Save Product'; saveBtn.disabled = false;
+      }
+    }
+
+    async function deleteProduct(id) {
+      const p = products.find(p => String(p.id) === String(id));
+      if (!p || !confirm(`Delete "${p.name}"?\nThis cannot be undone.`)) return;
+      try {
+        await ProductsAPI.delete(id);
+        products = products.filter(p => String(p.id) !== String(id));
+        applyProductFilters();
+        buildTopProducts();
+        updateStats();
+        updateBadges();
+      } catch (err) { alert('Could not delete: ' + err.message); }
+    }
+
+    // ─── CHAT ────────────────────────────────────────────────────────────
+    function buildChatThreads() {
+      const el = document.getElementById('chat-threads');
+      if (!conversations.length) {
+        el.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:2rem;font-size:14px;">No messages yet.<br>Customers will appear here when they message your shop.</div>';
+        return;
+      }
+      el.innerHTML = conversations.map(c => `
+        <div class="dash-chat-thread${String(c.id) === String(activeConvId) ? ' active' : ''}" onclick="openConv('${c.id}')">
+          <div class="dash-chat-thread-avatar">${c.initial}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="dash-chat-thread-name">${c.name}${c.unread ? ` <span class="dash-chat-unread">${c.unread}</span>` : ''}</div>
+            <div class="dash-chat-thread-preview">${c.preview}</div>
+          </div>
+          <div class="dash-chat-thread-time">${c.time}</div>
+        </div>`).join('');
+    }
+
+    async function openConv(id) {
+      activeConvId = String(id);
+      const conv = conversations.find(c => String(c.id) === String(id));
+      if (!conv) return;
+      conv.unread = 0;
+      document.getElementById('chat-window-avatar').textContent = conv.initial;
+      document.getElementById('chat-window-name').textContent   = conv.name;
+      document.getElementById('chat-window-status').textContent = 'Customer';
+      document.getElementById('chat-messages').innerHTML =
+        '<div style="text-align:center;color:#9ca3af;padding:3rem;font-size:14px;">Loading…</div>';
+      if (activeShop) {
+        try {
+          const myId = Auth.getUser()?.id;
+          const msgs = await MessagesAPI.conversation(activeShop.id, conv.otherUserId);
+          conv.messages = msgs.map(m => ({
+            text:       m.text || '',
+            mine:       m.sender_id === myId,
+            time:       formatMsgTime(m.created_at),
+            created_at: m.created_at,
+            image_url:  m.image_url || null
+          }));
+        } catch(e) { conv.messages = []; }
+      }
+      renderMessages(conv.messages);
+      buildChatThreads();
+      const total = conversations.reduce((s, c) => s + c.unread, 0);
+      const uc = document.getElementById('unread-count');
+      if (uc) { uc.textContent = total; uc.style.display = total ? 'inline' : 'none'; }
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function chatDateLabel(iso) {
+      if (!iso) return '';
+      const d = new Date(iso), today = new Date(), yest = new Date(today);
+      yest.setDate(today.getDate() - 1);
+      if (d.toDateString() === today.toDateString()) return 'Today';
+      if (d.toDateString() === yest.toDateString())  return 'Yesterday';
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+    }
+
+    function dashImgHtml(url) {
+      const safe = escHtml(url);
+      return `<img src="${safe}" style="max-width:220px;width:100%;border-radius:8px;display:block;cursor:pointer;" loading="lazy" onclick="window.open('${safe}','_blank')">`;
+    }
+
+    function renderMessages(msgs) {
+      const el = document.getElementById('chat-messages');
+      el.style.background = '#ece5dd';
+      if (!msgs.length) {
+        el.innerHTML = '<div style="text-align:center;color:#6b7280;font-size:14px;padding:3rem;">No messages yet in this conversation.</div>';
+        return;
+      }
+      const conv = conversations.find(c => String(c.id) === String(activeConvId));
+      let lastDate = '', html = '';
+      msgs.forEach(m => {
+        const dateStr = chatDateLabel(m.created_at);
+        if (dateStr && dateStr !== lastDate) {
+          html += `<div style="text-align:center;margin:10px 0;"><span style="background:rgba(225,245,254,0.92);color:#546e7a;font-size:12px;padding:4px 14px;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.1);">${dateStr}</span></div>`;
+          lastDate = dateStr;
+        }
+        const hasImg  = !!m.image_url;
+        const imgHtml = hasImg ? dashImgHtml(m.image_url) : '';
+        const txtHtml = m.text ? `<div style="font-size:14px;color:#111;word-break:break-word;line-height:1.45;${hasImg ? 'padding:4px 6px 0;' : ''}">${escHtml(m.text)}</div>` : '';
+        const pad     = hasImg ? '5px 5px 4px' : '8px 12px 5px';
+        const tPad    = hasImg ? 'padding:0 6px;' : '';
+        if (m.mine) {
+          html += `
+            <div style="display:flex;justify-content:flex-end;margin-bottom:3px;">
+              <div style="max-width:75%;background:#dcf8c6;border-radius:12px 2px 12px 12px;padding:${pad};box-shadow:0 1px 2px rgba(0,0,0,0.12);">
+                ${imgHtml}${txtHtml}
+                <div style="${tPad}font-size:11px;color:#6b7280;text-align:right;margin-top:4px;">${m.time}&nbsp;<span style="color:#53d769;">&#10003;&#10003;</span></div>
+              </div>
+            </div>`;
+        } else {
+          const ini  = conv ? conv.initial : '?';
+          const name = conv ? conv.name    : 'Customer';
+          html += `
+            <div style="display:flex;align-items:flex-end;gap:7px;margin-bottom:3px;">
+              <div style="width:30px;height:30px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${ini}</div>
+              <div style="max-width:75%;background:#fff;border-radius:2px 12px 12px 12px;padding:${pad};box-shadow:0 1px 2px rgba(0,0,0,0.12);">
+                <div style="font-size:11px;color:#2563eb;font-weight:600;margin-bottom:3px;${hasImg ? 'padding:0 6px;' : ''}">${escHtml(name)}</div>
+                ${imgHtml}${txtHtml}
+                <div style="${tPad}font-size:11px;color:#9ca3af;text-align:right;margin-top:4px;">${m.time}</div>
+              </div>
+            </div>`;
+        }
+      });
+      el.innerHTML = html;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    async function sendDashChatImage(input) {
+      const file = input.files[0];
+      input.value = '';
+      if (!file || activeConvId === null || !activeShop) return;
+      if (file.size > 10 * 1024 * 1024) { alert('Image too large. Max 10 MB.'); return; }
+      const conv = conversations.find(c => String(c.id) === String(activeConvId));
+      if (!conv) return;
+      const el  = document.getElementById('chat-messages');
+      const now = new Date().toISOString();
+      /* Placeholder bubble */
+      const placeholder = { text: 'Uploading image…', mine: true, time: formatMsgTime(now), created_at: now, image_url: null };
+      conv.messages.push(placeholder);
+      renderMessages(conv.messages);
+      try {
+        const compressed = await compressImage(file, 1024, 1024, 0.82);
+        const blob       = dataURLtoBlob(compressed);
+        const uploadFile = new File([blob], file.name || 'image.jpg', { type: blob.type });
+        const imageUrl   = await MessagesAPI.uploadImage(uploadFile);
+        /* Replace placeholder with real image */
+        const idx = conv.messages.indexOf(placeholder);
+        if (idx !== -1) conv.messages[idx] = { text: '', mine: true, time: formatMsgTime(now), created_at: now, image_url: imageUrl };
+        conv.preview = '📷 Image';
+        renderMessages(conv.messages);
+        buildChatThreads();
+        await MessagesAPI.send({ shop_id: activeShop.id, receiver_id: conv.otherUserId, image_url: imageUrl });
+      } catch(e) {
+        const idx = conv.messages.indexOf(placeholder);
+        if (idx !== -1) conv.messages.splice(idx, 1);
+        renderMessages(conv.messages);
+        alert('Could not send image: ' + e.message);
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text  = input.value.trim();
+      if (!text || activeConvId === null) return;
+      const conv = conversations.find(c => String(c.id) === String(activeConvId));
+      if (!conv) return;
+      input.value = '';
+      const now = new Date().toISOString();
+      const localMsg = { text, mine: true, time: formatMsgTime(now), created_at: now };
+      conv.messages.push(localMsg);
+      conv.preview = text;
+      renderMessages(conv.messages);
+      buildChatThreads();
+      try {
+        await MessagesAPI.send({ shop_id: activeShop.id, receiver_id: conv.otherUserId, text });
+      } catch(e) { console.warn('Send failed:', e.message); }
+    }
+
+    // ─── SETTINGS ────────────────────────────────────────────────────────
+    function populateSettings() {
+      if (!activeShop) return;
+      const logoEl = document.getElementById('set-logo-preview');
+      if (logoEl) {
+        if (activeShop.logo_url) {
+          logoEl.style.backgroundImage = `url(${activeShop.logo_url})`;
+          logoEl.style.backgroundSize = 'cover';
+          logoEl.style.backgroundPosition = 'center';
+          logoEl.textContent = '';
+        } else {
+          logoEl.style.backgroundImage = '';
+          logoEl.textContent = activeShop.emoji || '';
+        }
+      }
+      const v = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+      v('set-shop-name',    activeShop.name);
+      v('set-shop-desc',    activeShop.description);
+      v('set-shop-address', activeShop.address);
+      v('set-shop-phone',   activeShop.phone);
+      v('set-mtn',          activeShop.mtn_momo || '');
+      v('set-orange',       activeShop.orange_money || '');
+      const catEl = document.getElementById('set-shop-cat');
+      if (catEl) Array.from(catEl.options).forEach(o => { o.selected = o.text === activeShop.cat; });
+      const locEl = document.getElementById('set-shop-loc');
+      if (locEl) Array.from(locEl.options).forEach(o => { o.selected = o.text === activeShop.loc || o.text === activeShop.city; });
+    }
+
+    function onLogoFileSelected(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { alert('Logo must be under 2 MB.'); input.value = ''; return; }
+      compressImage(file, 200, 200, 0.85).then(base64 => {
+        currentLogoBase64 = base64;
+        const el = document.getElementById('set-logo-preview');
+        if (el) {
+          el.style.backgroundImage = `url(${base64})`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+          el.textContent = '';
+        }
+      });
+    }
+
+    async function saveSettings() {
+      if (!activeShop) return;
+      const btn = document.getElementById('save-btn');
+      btn.textContent = 'Saving…'; btn.disabled = true;
+      try {
+        const name    = (document.getElementById('set-shop-name')?.value    || '').trim();
+        const desc    = (document.getElementById('set-shop-desc')?.value    || '').trim();
+        const address = (document.getElementById('set-shop-address')?.value || '').trim();
+        const phone   = (document.getElementById('set-shop-phone')?.value   || '').trim();
+        const cat     = document.getElementById('set-shop-cat')?.value  || activeShop.cat;
+        const loc     = document.getElementById('set-shop-loc')?.value  || activeShop.loc;
+        const mtn     = (document.getElementById('set-mtn')?.value     || '').trim();
+        const orange  = (document.getElementById('set-orange')?.value  || '').trim();
+
+        // Only include columns known to exist in the shops table
+        const updates = { name, description: desc, cat, loc, address, phone };
+
+        // Upload logo first so its URL is available before the main update
+        if (currentLogoBase64) {
+          try {
+            btn.textContent = 'Uploading logo…';
+            const blob = dataURLtoBlob(currentLogoBase64);
+            const ext  = blob.type.split('/')[1] || 'jpg';
+            const file = new File([blob], `logo.${ext}`, { type: blob.type });
+            const url  = await ShopsAPI.uploadLogo(activeShop.id, file);
+            updates.logo_url = url;
+          } catch (imgErr) { console.warn('Logo upload failed:', imgErr.message); }
+        }
+
+        let updatedShop;
+        try {
+          updatedShop = await ShopsAPI.update(activeShop.id, updates);
+        } catch (updateErr) {
+          // If logo_url column doesn't exist yet, retry without it
+          if (updates.logo_url && updateErr.message.includes('logo_url')) {
+            const { logo_url: _drop, ...safeUpdates } = updates;
+            updatedShop = await ShopsAPI.update(activeShop.id, safeUpdates);
+          } else {
+            throw updateErr;
+          }
+        }
+        activeShop = { ...activeShop, ...updatedShop };
+        currentLogoBase64 = null;
+
+        const nameEl2   = document.querySelector('.dash-nav-shop-name');
+        const avatarEl2 = document.querySelector('.dash-nav-shop-avatar');
+        if (nameEl2) nameEl2.textContent = activeShop.name || 'My Shop';
+        if (avatarEl2) avatarEl2.innerHTML = activeShop.logo_url
+          ? `<img src="${activeShop.logo_url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="${activeShop.name}">`
+          : (activeShop.emoji || '<i class="ti ti-building-store"></i>');
+
+        btn.textContent = 'Saved!';
+        setTimeout(() => { btn.textContent = 'Save Changes'; btn.disabled = false; }, 2000);
+      } catch (err) {
+        alert('Could not save settings: ' + err.message);
+        btn.textContent = 'Save Changes'; btn.disabled = false;
+      }
+    }
+
+    // ─── BADGE SYNC ──────────────────────────────────────────────────────
+    function updateBadges() {
+      const pc = products.length;
+      const oc = orders.filter(o => o.status === 'pending').length;
+      const mc = conversations.reduce((s, c) => s + c.unread, 0);
+
+      const ob = document.getElementById('nav-orders-badge');
+      const pb = document.getElementById('nav-products-badge');
+      const mb = document.getElementById('nav-messages-badge');
+      if (ob) { ob.textContent = oc; ob.style.display = oc ? 'inline-flex' : 'none'; }
+      if (pb) { pb.textContent = pc; pb.style.display = pc ? 'inline-flex' : 'none'; }
+      if (mb) { mb.textContent = mc; mb.style.display = mc ? 'inline-flex' : 'none'; }
+
+      const otc = document.getElementById('tab-orders-count');
+      const ptc = document.getElementById('tab-products-count');
+      const mtc = document.getElementById('tab-messages-count');
+      if (otc) otc.textContent = oc || '';
+      if (ptc) ptc.textContent = pc || '';
+      if (mtc) mtc.textContent = mc || '';
+
+      const uc = document.getElementById('unread-count');
+      if (uc) { uc.textContent = mc; uc.style.display = mc ? 'inline' : 'none'; }
+    }
+
+    // ─── INITIAL EMPTY RENDER ────────────────────────────────────────────
+    buildChart();
+    buildRecentOrders();
+    buildTopProducts();
+    renderOrdersTable([]);
+    applyProductFilters();
+    buildChatThreads();
+
+    // ─── INIT: LOAD REAL DATA ────────────────────────────────────────────
+    (async function initDashboard() {
+      if (!Auth.isLoggedIn()) { window.location.href = 'project.html'; return; }
+      const cu = Auth.getUser();
+      if (cu && cu.role !== 'seller') { window.location.href = 'home.html'; return; }
+
+      const shopId = localStorage.getItem('cammarket_active_shop');
+      if (!shopId) { window.location.href = 'create-shop.html'; return; }
+
+      try {
+        activeShop = await ShopsAPI.get(shopId);
+        if (!activeShop) { window.location.href = 'create-shop.html'; return; }
+
+        // Backfill: ensure shop is publicly visible on browse page
+        if (!activeShop.verified) {
+          try {
+            const fixed = await ShopsAPI.update(activeShop.id, { verified: true });
+            activeShop = { ...activeShop, ...fixed };
+          } catch(e) { /* non-critical */ }
+        }
+
+        const avatarEl = document.querySelector('.dash-nav-shop-avatar');
+        const nameEl   = document.querySelector('.dash-nav-shop-name');
+        if (avatarEl) avatarEl.innerHTML = activeShop.logo_url
+          ? `<img src="${activeShop.logo_url}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="${activeShop.name}">`
+          : (activeShop.emoji || '<i class="ti ti-building-store"></i>');
+        if (nameEl)   nameEl.textContent  = activeShop.name  || 'My Shop';
+
+        // Products
+        try {
+          products = (await ShopsAPI.products(activeShop.id)).map(normalizeProduct);
+        } catch(e) { products = []; }
+        applyProductFilters();
+        buildTopProducts();
+
+        // Orders
+        try {
+          orders = ((await OrdersAPI.getSellerOrders()) || []).map(normalizeOrder);
+        } catch(e) { orders = []; }
+        applyOrderFilters();
+        buildRecentOrders();
+        buildChart();
+
+        // Messages
+        try {
+          conversations = ((await MessagesAPI.threads(activeShop.id)) || []).map(normalizeThread);
+        } catch(e) { conversations = []; }
+        buildChatThreads();
+
+        // Handle notification deep-link: ?panel=chat&buyer=<uuid>
+        const _dp = new URLSearchParams(window.location.search);
+        if (_dp.get('panel') === 'chat') {
+          showPanel('chat',
+            document.querySelector('.dash-nav-item[onclick*="chat"]'),
+            document.querySelector('.dash-tab[onclick*="chat"]'));
+          const _buyerId = _dp.get('buyer');
+          if (_buyerId) {
+            const _match = conversations.find(c => c.otherUserId === _buyerId);
+            if (_match) openConv(_match.id);
+          }
+        }
+
+        updateStats();
+        updateBadges();
+
+      } catch(e) { console.warn('Dashboard init error:', e); }
+    })();
+
+    function viewMyShop(e) {
+      e.preventDefault();
+      const shopId = localStorage.getItem('cammarket_active_shop');
+      window.location.href = shopId ? 'shop.html?id=' + shopId : 'create-shop.html';
+    }
+
+    async function handleLogout() {
+      await Auth.logout();
+      window.location.href = 'project.html';
+    }
+  </script>
+  </script>
+
+  <script>
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html));
+        /* No secondHeader hiding — full header shows on this page */
+      })
+      .catch(() => console.warn('header.html could not be loaded.'));
+  </script>
+</body>
+</html>
+
+

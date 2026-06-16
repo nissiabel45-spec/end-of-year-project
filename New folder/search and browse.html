@@ -1,0 +1,432 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SHOPS</title>
+<link rel="stylesheet" href="assets/edit.css">
+</head>
+<body class="search-and-browse">
+
+<!-- HEADER (loaded from header.html) -->
+<div id="header-placeholder"></div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <h1>Browse Shops</h1>
+    <p>Discover local businesses across Cameroon. search by name, category, or town.</p>
+
+    <!-- BIG SEARCH BAR -->
+    <div class="search-bar-hero">
+      <div class="search-field" style="flex:3;">
+        <svg class="s-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="search-name" placeholder="Shop name or product..." oninput="filterShops()" />
+      </div>
+      <div class="select-wrap">
+        <svg class="s-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <select id="filter-cat" class="filter-select" onchange="filterShops()">
+          <option value="">All categories</option>
+          <option>Food & Drinks</option>
+          <option>Fashion & Clothing</option>
+          <option>Electronics</option>
+          <option>Crafts & Art</option>
+          <option>Services</option>
+          <option>Agriculture</option>
+          <option>Beauty & Health</option>
+          <option>Home & Garden</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <svg class="s-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <select id="filter-loc" class="filter-select" onchange="filterShops()">
+          <option value="">All locations</option>
+          <option>Buea</option>
+          <option>Douala</option>
+          <option>Yaoundé</option>
+          <option>Bafoussam</option>
+          <option>Bamenda</option>
+          <option>Limbe</option>
+          <option>Ngaoundare</option>
+          <option>Maroua</option>
+          <option>Garoua</option>
+          <option>Kribi</option>
+          <option>Kumba</option>
+          <option>Ebolowa</option>
+        </select>
+      </div>
+      <button class="btn-search" onclick="filterShops()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Search
+      </button>
+    </div>
+
+    <!-- CATEGORY PILLS -->
+    <div class="filter-tabs" id="cat-tabs">
+      <button class="tab-pill active" onclick="selectTab(this,'')"> All</button>
+      <button class="tab-pill" onclick="selectTab(this,'Food & Drinks')"> Food & Drinks</button>
+      <button class="tab-pill" onclick="selectTab(this,'Fashion & Clothing')">Fashion</button>
+      <button class="tab-pill" onclick="selectTab(this,'Electronics')">Electronics</button>
+      <button class="tab-pill" onclick="selectTab(this,'Crafts & Art')">Art & craft</button>
+      <button class="tab-pill" onclick="selectTab(this,'Services')"> Services</button>
+      <button class="tab-pill" onclick="selectTab(this,'Agriculture')"> Agriculture</button>
+      <button class="tab-pill" onclick="selectTab(this,'Beauty & Health')"> Beauty</button>
+      <button class="tab-pill" onclick="selectTab(this,'Home & Garden')"> Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">By Region</div>
+      <button class="sidebar-option active" id="loc-all" onclick="filterByLoc(this,'')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        All of Cameroon
+        <span class="count" id="count-all">0</span>
+      </button>
+      <div id="loc-buttons"></div>
+    </div>
+
+    <div class="sidebar-divider" id="rating-divider" style="display:none"></div>
+
+    <div class="sidebar-section" id="rating-section" style="display:none">
+      <div class="sidebar-label">Rating</div>
+      <button class="sidebar-option" id="btn-5star" onclick="filterByRating(this,5)">
+        &#9733;&#9733;&#9733;&#9733;&#9733; 5 stars
+        <span class="count" id="count-5star">0</span>
+      </button>
+      <button class="sidebar-option" id="btn-4star" onclick="filterByRating(this,4)">
+        &#9733;&#9733;&#9733;&#9733; 4 stars
+        <span class="count" id="count-4star">0</span>
+      </button>
+      <button class="sidebar-option" id="btn-3star" onclick="filterByRating(this,3)">
+        &#9733;&#9733;&#9733; 3 stars
+        <span class="count" id="count-3star">0</span>
+      </button>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Verified shops</div>
+      <button class="sidebar-option" id="btn-verified" onclick="filterVerified(this)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="2"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        Verified only
+        <span class="count" id="count-verified">0</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- RESULTS AREA -->
+  <div>
+    <!-- Active filters -->
+    <div class="active-filters" id="active-filters"></div>
+
+    <div class="results-header">
+      <div class="results-count" id="results-count">Showing <strong>24</strong> shops</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <select class="sort-select" onchange="sortShops(this.value)">
+          <option value="popular">Most popular</option>
+          <option value="newest">Newest</option>
+          <option value="rating">Highest rated</option>
+          <option value="az">A - Z</option>
+        </select>
+        <div class="view-toggle">
+          <button class="view-btn active" onclick="setView('grid',this)" title="Grid view">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" onclick="setView('list',this)" title="List view">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="shop-grid" id="shop-grid"></div>
+
+    <div class="pagination" id="pagination">
+      <button class="page-btn arrow">&#8592;</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn arrow">&#8594;</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+<script>
+const catColors = {
+  "Food & Drinks":"badge-food",
+  "Fashion & Clothing":"badge-fashion",
+  "Electronics":"badge-electronics",
+  "Crafts & Art":"badge-crafts",
+  "Services":"badge-services",
+  "Agriculture":"badge-agriculture",
+  "Beauty & Health":"badge-beauty",
+  "Home & Garden":"badge-home"
+};
+
+let allShops = [];
+let activeCategory = "";
+let activeLocation = "";
+let activeMinRating = 0;
+let activeVerifiedOnly = false;
+let activeQuery = "";
+let currentView = "grid";
+
+async function loadApiShops() {
+  try {
+    const apiShops = await ShopsAPI.list();
+    allShops = apiShops.map(s => ({ ...s, desc: s.description || "" }));
+    updateSidebarCounts(allShops);
+    applyFilters();
+  } catch(e) {
+    applyFilters();
+  }
+}
+loadApiShops();
+
+function updateSidebarCounts(shops) {
+  // All of Cameroon count
+  document.getElementById("count-all").textContent = shops.length;
+
+  // Location buttons - only cities with actual shops
+  const locCounts = {};
+  shops.forEach(s => { if (s.loc) locCounts[s.loc] = (locCounts[s.loc] || 0) + 1; });
+  const locContainer = document.getElementById("loc-buttons");
+  locContainer.innerHTML = '';
+  const pinSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  Object.entries(locCounts).sort((a, b) => b[1] - a[1]).forEach(function(entry) {
+    const loc = entry[0], cnt = entry[1];
+    const btn = document.createElement('button');
+    btn.className = 'sidebar-option';
+    btn.innerHTML = pinSvg + loc + '<span class="count">' + cnt + '</span>';
+    btn.addEventListener('click', function() { filterByLoc(btn, loc); });
+    locContainer.appendChild(btn);
+  });
+
+  // Rating section - only show if any shop has a rating > 0
+  const rated = shops.filter(s => s.rating > 0);
+  const ratingSection = document.getElementById("rating-section");
+  const ratingDivider = document.getElementById("rating-divider");
+  if (rated.length === 0) {
+    ratingSection.style.display = "none";
+    ratingDivider.style.display = "none";
+  } else {
+    ratingSection.style.display = "";
+    ratingDivider.style.display = "";
+    const cnt5 = shops.filter(s => Math.round(s.rating) === 5).length;
+    const cnt4 = shops.filter(s => Math.round(s.rating) === 4).length;
+    const cnt3 = shops.filter(s => Math.round(s.rating) === 3).length;
+    document.getElementById("count-5star").textContent = cnt5;
+    document.getElementById("count-4star").textContent = cnt4;
+    document.getElementById("count-3star").textContent = cnt3;
+    document.getElementById("btn-5star").style.display = cnt5 > 0 ? "" : "none";
+    document.getElementById("btn-4star").style.display = cnt4 > 0 ? "" : "none";
+    document.getElementById("btn-3star").style.display = cnt3 > 0 ? "" : "none";
+  }
+
+  // Verified count
+  const verifiedCount = shops.filter(s => s.verified).length;
+  document.getElementById("count-verified").textContent = verifiedCount;
+}
+
+function renderShops(list) {
+  const grid = document.getElementById('shop-grid');
+  document.getElementById('results-count').innerHTML = `Showing <strong>${list.length}</strong> shop${list.length !== 1 ? 's':''}`;
+  if (!list.length) {
+        grid.innerHTML = !allShops.length
+      ? `<div class="empty-state"><div class="empty-icon"><i class="ti ti-building-store" style="font-size:2rem;"></i></div><h3>No shops yet</h3><p>No verified shops have been registered yet. <a href="register.html" style="color:#2563eb;">Open your shop</a> to be the first!</p></div>`
+      : `<div class="empty-state"><div class="empty-icon"><i class="ti ti-search" style="font-size:2rem;"></i></div><h3>No shops found</h3><p>Try adjusting your filters or search term.</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map((s, i) => `
+    <a class="shop-card" href="shop.html?id=${s.id}" style="animation-delay:${i * 0.06}s">
+      ${s.featured ? '<div class="featured-banner">&#9733; Featured shop</div>' : ''}
+      <div class="shop-cover" style="background:${coverBg(s.cat)}">
+        <div class="cover-pattern"></div>
+        <span class="shop-cover-emoji">${s.emoji}</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;">
+        <div class="shop-avatar">${s.emoji}</div>
+      </div>
+      <div class="shop-body">
+        <div class="shop-top-row">
+          <div>
+            <div class="shop-name">
+              ${s.name}
+              ${s.verified ? `<svg style="display:inline;vertical-align:-2px;margin-left:4px" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="2.5"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>` : ''}
+            </div>
+            <div class="shop-location">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${s.loc}
+            </div>
+          </div>
+          <span class="shop-cat-badge ${catColors[s.cat]||'badge-food'}">${s.cat}</span>
+        </div>
+        <div class="shop-meta">
+          <div class="shop-rating">${(s.rating || 0) > 0 ? '&#9733; ' + Number(s.rating).toFixed(1) : '<span style="color:#9ca3af;font-size:11px">No ratings yet</span>'}</div>
+          <div class="shop-meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            ${s.review_count || 0} review${(s.review_count || 0) !== 1 ? 's' : ''}
+          </div>
+        </div>
+      </div>
+    </a>
+  `).join('');
+}
+
+function coverBg(cat) {
+  const map = {
+    "Food & Drinks": "linear-gradient(135deg,#fef3c7,#fde68a)",
+    "Fashion & Clothing": "linear-gradient(135deg,#fce7f3,#fbcfe8)",
+    "Electronics": "linear-gradient(135deg,#ede9fe,#ddd6fe)",
+    "Crafts & Art": "linear-gradient(135deg,#e0f2fe,#bbf7d0)",
+    "Services": "linear-gradient(135deg,#eff6ff,#bfdbfe)",
+    "Agriculture": "linear-gradient(135deg,#ecfdf5,#a7f3d0)",
+    "Beauty & Health": "linear-gradient(135deg,#fff1f2,#fecdd3)",
+    "Home & Garden": "linear-gradient(135deg,#fef9c3,#fef08a)"
+  };
+  return map[cat] || "linear-gradient(135deg,#e0f2fe,#bfdbfe)";
+}
+
+function filterShops() {
+  activeQuery = document.getElementById('search-name').value.toLowerCase();
+  const catVal = document.getElementById('filter-cat').value;
+  if (catVal) activeCategory = catVal;
+  const locVal = document.getElementById('filter-loc').value;
+  if (locVal) activeLocation = locVal;
+  applyFilters();
+}
+
+function applyFilters() {
+  let results = allShops.filter(s => {
+    const matchQ   = !activeQuery        || s.name.toLowerCase().includes(activeQuery) || (s.cat||'').toLowerCase().includes(activeQuery) || (s.desc||'').toLowerCase().includes(activeQuery);
+    const matchCat = !activeCategory     || s.cat === activeCategory;
+    const matchLoc = !activeLocation     || s.loc === activeLocation;
+    const matchRat = !activeMinRating    || Math.round(s.rating || 0) === activeMinRating;
+    const matchVer = !activeVerifiedOnly || s.verified;
+    return matchQ && matchCat && matchLoc && matchRat && matchVer;
+  });
+  renderShops(results);
+  renderActiveFilters();
+}
+
+function renderActiveFilters() {
+  const el = document.getElementById('active-filters');
+  let chips = '';
+  if (activeCategory) chips += `<div class="filter-chip"> ${activeCategory}<button class="chip-remove" onclick="clearFilter('cat')">&times;</button></div>`;
+  if (activeLocation) chips += `<div class="filter-chip"> ${activeLocation}<button class="chip-remove" onclick="clearFilter('loc')">&times;</button></div>`;
+  if (activeQuery) chips += `<div class="filter-chip"> "${activeQuery}"<button class="chip-remove" onclick="clearFilter('query')">&times;</button></div>`;
+  el.innerHTML = chips;
+}
+
+function clearFilter(type) {
+  if (type === 'cat') { activeCategory=''; document.getElementById('filter-cat').value=''; document.querySelectorAll('.tab-pill').forEach(p=>p.classList.remove('active')); document.querySelector('.tab-pill').classList.add('active'); }
+  if (type === 'loc') { activeLocation=''; document.getElementById('filter-loc').value=''; document.querySelectorAll('.sidebar-option')[0].classList.add('active'); }
+  if (type === 'query') { activeQuery=''; document.getElementById('search-name').value=''; }
+  applyFilters();
+}
+
+function selectTab(el, cat) {
+  document.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  activeCategory = cat;
+  document.getElementById('filter-cat').value = cat;
+  applyFilters();
+}
+
+function filterByLoc(el, loc) {
+  document.querySelectorAll('.sidebar-option').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  activeLocation = loc;
+  document.getElementById('filter-loc').value = loc;
+  applyFilters();
+}
+
+function filterByRating(el, minRating) {
+  const already = activeMinRating === minRating;
+  document.querySelectorAll('#rating-section .sidebar-option').forEach(o => o.classList.remove('active'));
+  if (already) {
+    activeMinRating = 0;
+  } else {
+    activeMinRating = minRating;
+    el.classList.add('active');
+  }
+  applyFilters();
+}
+
+function filterVerified(el) {
+  activeVerifiedOnly = !activeVerifiedOnly;
+  el.classList.toggle('active', activeVerifiedOnly);
+  applyFilters();
+}
+
+function sortShops(val) {
+  let list = allShops.filter(s => {
+    const matchQ   = !activeQuery        || s.name.toLowerCase().includes(activeQuery);
+    const matchCat = !activeCategory     || s.cat === activeCategory;
+    const matchLoc = !activeLocation     || s.loc === activeLocation;
+    const matchRat = !activeMinRating    || Math.round(s.rating || 0) === activeMinRating;
+    const matchVer = !activeVerifiedOnly || s.verified;
+    return matchQ && matchCat && matchLoc && matchRat && matchVer;
+  });
+  if (val === 'rating') list.sort((a,b) => b.rating - a.rating);
+  else if (val === 'az') list.sort((a,b) => a.name.localeCompare(b.name));
+  else if (val === 'newest') list.sort((a,b) => (b.createdAt||'') > (a.createdAt||'') ? 1 : -1);
+  else list.sort((a,b) => b.reviews - a.reviews);
+  renderShops(list);
+}
+
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const grid = document.getElementById('shop-grid');
+  if (view === 'list') {
+    grid.style.gridTemplateColumns = '1fr';
+  } else {
+    grid.style.gridTemplateColumns = '';
+  }
+}
+
+function openShop(e, id) {
+  e.preventDefault();
+  window.location.href = 'shop.html?id=' + id;
+}
+
+// Apply ?cat= URL param (from header nav dropdown and home page Visit Shop buttons)
+const catMap = {
+  food:'Food & Drinks', fashion:'Fashion & Clothing', electronics:'Electronics',
+  crafts:'Crafts & Art', services:'Services', agriculture:'Agriculture',
+  beauty:'Beauty & Health', home:'Home & Garden'
+};
+const urlCat = new URLSearchParams(location.search).get('cat');
+if (urlCat && catMap[urlCat]) {
+  activeCategory = catMap[urlCat];
+  document.getElementById('filter-cat').value = activeCategory;
+  document.querySelectorAll('.tab-pill').forEach(p => {
+    p.classList.toggle('active', p.getAttribute('onclick') && p.getAttribute('onclick').includes("'" + activeCategory + "'"));
+  });
+  if (!document.querySelector('.tab-pill.active')) {
+    document.querySelector('.tab-pill').classList.add('active');
+  }
+}
+applyFilters();
+
+// -- LOAD HEADER --
+fetch('header.html')
+  .then(r => r.text())
+  .then(html => {
+    const ph = document.getElementById('header-placeholder'); ph.appendChild(document.createRange().createContextualFragment(html));
+  })
+  .catch(() => console.warn('header.html could not be loaded.'));
+</script>
+</body>
+</html>
